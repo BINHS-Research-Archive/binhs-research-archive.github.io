@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ByteLib — Research Portal</title>
+<title>BINHS — Research Archive</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -510,15 +510,84 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 .alert-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0}
 
 /* ══════════════════════════════════════════
+   SPLASH TEXT
+══════════════════════════════════════════ */
+.hero-splash{
+  display:inline-block;
+  position:relative;
+  background:rgba(255,220,0,0.13);
+  border:1.5px solid rgba(255,220,0,0.35);
+  border-radius:6px;
+  padding:0.22rem 0.85rem;
+  font-size:0.78rem;font-weight:700;
+  color:#ffe066;
+  letter-spacing:0.01em;
+  margin-bottom:1rem;
+  cursor:default;
+  transform:rotate(-2deg) scale(1);
+  transform-origin:center;
+  animation:splashPop 0.45s cubic-bezier(.36,1.56,.64,1) both, splashWobble 2.8s ease-in-out 0.45s infinite;
+  max-width:90%;
+  word-break:break-word;
+  text-shadow:0 0 12px rgba(255,220,0,0.4);
+}
+@keyframes splashPop{
+  0%{opacity:0;transform:rotate(-2deg) scale(0.5)}
+  100%{opacity:1;transform:rotate(-2deg) scale(1)}
+}
+@keyframes splashWobble{
+  0%,100%{transform:rotate(-2deg) scale(1)}
+  50%{transform:rotate(-2deg) scale(1.04)}
+}
+
+/* ══════════════════════════════════════════
    FOOTER
 ══════════════════════════════════════════ */
-footer{
+.site-footer{
   background:var(--footer-bg);
   border-top:1px solid var(--border);
-  text-align:center;padding:1.5rem 1rem;
-  font-size:0.72rem;color:var(--muted2);
   transition:background .25s,border-color .25s;
 }
+.footer-main{
+  max-width:1000px;margin:0 auto;
+  padding:2.5rem 1.5rem 1.5rem;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:2rem;
+}
+@media(max-width:640px){
+  .footer-main{grid-template-columns:1fr;gap:1.5rem;padding:2rem 1.25rem 1.25rem}
+}
+.footer-col{}
+.footer-school{display:flex;align-items:center;gap:0.75rem;margin-bottom:0.75rem}
+.footer-logo-img{width:44px;height:44px;border-radius:8px;object-fit:contain;background:var(--surface2);flex-shrink:0}
+.footer-logo-placeholder{width:44px;height:44px;border-radius:8px;background:var(--accent);display:grid;place-items:center;flex-shrink:0}
+.footer-logo-placeholder svg{width:24px;height:24px;fill:none;stroke:#0a0f0d;stroke-width:2.5}
+.footer-school-name{font-size:0.82rem;font-weight:700;color:var(--text);line-height:1.3}
+.footer-school-sub{font-size:0.67rem;color:var(--muted2)}
+.footer-tagline{font-size:0.75rem;color:var(--muted);line-height:1.7;margin-bottom:0.75rem}
+.footer-sy{font-size:0.68rem;color:var(--muted2);font-weight:500}
+
+.footer-col-title{font-size:0.65rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--accent);margin-bottom:0.75rem}
+.footer-link{display:flex;align-items:center;gap:0.45rem;font-size:0.75rem;color:var(--muted);text-decoration:none;margin-bottom:0.45rem;transition:color .15s}
+.footer-link:hover{color:var(--accent)}
+.footer-link svg{flex-shrink:0;opacity:0.7}
+.footer-credit-item{font-size:0.75rem;color:var(--muted);margin-bottom:0.35rem;line-height:1.5}
+.footer-credit-item strong{color:var(--text2);font-weight:600}
+.footer-credit-role{font-size:0.65rem;color:var(--muted2)}
+
+.footer-tech{display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.25rem}
+.tech-badge{font-size:0.62rem;font-weight:600;padding:0.18rem 0.55rem;border-radius:20px;border:1.5px solid var(--border2);color:var(--muted);background:var(--surface2)}
+
+.footer-bottom{
+  border-top:1px solid var(--border);
+  padding:0.9rem 1.5rem;
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:0.5rem;
+  font-size:0.68rem;color:var(--muted2);
+}
+.footer-bottom a{color:var(--muted2);text-decoration:none;transition:color .15s}
+.footer-bottom a:hover{color:var(--accent)}
 
 /* ══════════════════════════════════════════
    RESPONSIVE
@@ -567,7 +636,7 @@ footer{
 <!-- HERO -->
 <section class="hero">
   <div class="hero-inner">
-    <div class="hero-eyebrow">📂 Live from Google Drive</div>
+    <div class="hero-splash" id="splash-text">Loading…</div>
     <h1>BINHS <em>Research</em> Archive</h1>
     <p class="hero-sub">Browse and download completed research papers from SHS students.</p>
     <div class="search-wrap">
@@ -590,6 +659,11 @@ footer{
     <div class="filter-group">
       <span class="filter-label">Grade</span>
       <div id="grade-chips" style="display:contents"></div>
+    </div>
+    <div class="filter-sep" id="year-filter-sep"></div>
+    <div class="filter-group" id="year-filter-group">
+      <span class="filter-label">Year</span>
+      <div id="year-chips" style="display:contents"></div>
     </div>
     <div class="sort-wrap">
       <select class="sort-sel" id="sort-sel">
@@ -617,7 +691,71 @@ footer{
   </div>
 </main>
 
-<footer>BINHS Research Archive · Powered by GitHub Pages + Google Drive · Auto-syncs from Drive folder</footer>
+<footer class="site-footer">
+  <div class="footer-main">
+
+    <!-- Col 1: School Info -->
+    <div class="footer-col">
+      <div class="footer-school">
+        <div class="footer-logo-placeholder" id="footer-logo-wrap">
+          <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        </div>
+        <div>
+          <div class="footer-school-name">Bulihan Integrated National High School</div>
+          <div class="footer-school-sub">BINHS Research Archive</div>
+        </div>
+      </div>
+      <p class="footer-tagline">A student research library preserving the academic work of BINHS researchers across all strands and school years.</p>
+      <div class="footer-sy">Launched S.Y 25–26</div>
+    </div>
+
+    <!-- Col 2: Links & Credits -->
+    <div class="footer-col">
+      <div class="footer-col-title">Connect</div>
+      <a class="footer-link" id="fb-link" href="https://facebook.com/TO_BE_ADDED" target="_blank" rel="noopener">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
+        Facebook Page
+      </a>
+      <a class="footer-link" href="https://github.com/BINHS-Research-Archive/binhs-research-archive.github.io" target="_blank" rel="noopener">
+        <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        GitHub Repository
+      </a>
+
+      <div class="footer-col-title" style="margin-top:1.25rem">Credits</div>
+      <div class="footer-credit-item">
+        <strong>Developers</strong><br>
+        <span class="footer-credit-role">STEM 12 Marie Curie</span>
+
+      </div>
+      <div class="footer-credit-item">
+        <strong>Project Adviser</strong><br>
+        <span class="footer-credit-role">Allen Jardinero</span>
+      </div>
+    </div>
+
+    <!-- Col 3: Built With -->
+    <div class="footer-col">
+      <div class="footer-col-title">Built With</div>
+      <div class="footer-tech">
+        <span class="tech-badge">GitHub Pages</span>
+        <span class="tech-badge">Google Drive API</span>
+        <span class="tech-badge">Vanilla JS</span>
+        <span class="tech-badge">CSS Variables</span>
+        <span class="tech-badge">Plus Jakarta Sans</span>
+        <span class="tech-badge">Playfair Display</span>
+        <span class="tech-badge">localStorage Cache</span>
+      </div>
+      <p style="font-size:0.72rem;color:var(--muted);margin-top:1rem;line-height:1.7">
+        No backend. No database. Papers live in Google Drive and sync automatically — no rebuild needed when new research is added.
+      </p>
+    </div>
+
+  </div>
+  <div class="footer-bottom">
+    <span>© <span id="footer-year"></span> Bulihan Integrated National High School. All rights reserved.</span>
+    <span>Research papers © their respective authors · <a href="https://creativecommons.org/licenses/by-nc/4.0/" target="_blank">CC BY-NC 4.0</a></span>
+  </div>
+</footer>
 
 <!-- DETAIL DRAWER -->
 <div class="drawer-ov" id="drawer-ov">
@@ -662,33 +800,60 @@ toggleBtn.addEventListener('click', () => {
   localStorage.setItem('bytelib-theme', next);
 });
 
-/* ── STRAND COLORS ── */
-const SC = {
-  STEM:   { bg:'rgba(0,200,140,0.12)',  text:'#00c896', bar:'#00c896' },
-  HUMSS:  { bg:'rgba(139,92,246,0.12)', text:'#a78bfa', bar:'#8b5cf6' },
-  ABM:    { bg:'rgba(34,197,94,0.12)',  text:'#4ade80', bar:'#22c55e' },
-  GAS:    { bg:'rgba(245,158,11,0.12)', text:'#fcd34d', bar:'#f59e0b' },
-  TVL:    { bg:'rgba(249,115,22,0.12)', text:'#fb923c', bar:'#f97316' },
-  SPORTS: { bg:'rgba(239,68,68,0.12)',  text:'#f87171', bar:'#ef4444' },
-  ARTS:   { bg:'rgba(6,182,212,0.12)',  text:'#67e8f9', bar:'#06b6d4' },
+/* ── STRAND COLORS — dynamic, works for any strand name ── */
+// Known strands get consistent colors; unknown ones get auto-assigned from palette
+const KNOWN_DARK = {
+  STEM:  { bg:'rgba(0,200,140,0.12)',   text:'#00c896', bar:'#00c896' },
+  HUMSS: { bg:'rgba(139,92,246,0.12)',  text:'#a78bfa', bar:'#8b5cf6' },
+  ABM:   { bg:'rgba(34,197,94,0.12)',   text:'#4ade80', bar:'#22c55e' },
+  AD:    { bg:'rgba(249,115,22,0.12)',  text:'#fb923c', bar:'#f97316' },
+  EIM:   { bg:'rgba(6,182,212,0.12)',   text:'#67e8f9', bar:'#06b6d4' },
+  HE:    { bg:'rgba(244,63,94,0.12)',   text:'#fb7185', bar:'#f43f5e' },
+  SMAW:  { bg:'rgba(245,158,11,0.12)',  text:'#fcd34d', bar:'#f59e0b' },
 };
-const SC_LIGHT = {
-  STEM:   { bg:'#dcfce7',  text:'#166534', bar:'#00a874' },
-  HUMSS:  { bg:'#ede9fe',  text:'#5b21b6', bar:'#7c3aed' },
-  ABM:    { bg:'#d1fae5',  text:'#065f46', bar:'#059669' },
-  GAS:    { bg:'#fef3c7',  text:'#92400e', bar:'#d97706' },
-  TVL:    { bg:'#ffedd5',  text:'#9a3412', bar:'#ea580c' },
-  SPORTS: { bg:'#fee2e2',  text:'#991b1b', bar:'#dc2626' },
-  ARTS:   { bg:'#cffafe',  text:'#155e75', bar:'#0891b2' },
+const KNOWN_LIGHT = {
+  STEM:  { bg:'#dcfce7', text:'#166534', bar:'#00a874' },
+  HUMSS: { bg:'#ede9fe', text:'#5b21b6', bar:'#7c3aed' },
+  ABM:   { bg:'#d1fae5', text:'#065f46', bar:'#059669' },
+  AD:    { bg:'#ffedd5', text:'#9a3412', bar:'#ea580c' },
+  EIM:   { bg:'#cffafe', text:'#155e75', bar:'#0891b2' },
+  HE:    { bg:'#ffe4e6', text:'#9f1239', bar:'#e11d48' },
+  SMAW:  { bg:'#fef3c7', text:'#92400e', bar:'#d97706' },
 };
+// Fallback palette for any future/unknown strands
+const PALETTE_DARK = [
+  { bg:'rgba(168,85,247,0.12)',  text:'#d8b4fe', bar:'#a855f7' },
+  { bg:'rgba(20,184,166,0.12)',  text:'#5eead4', bar:'#14b8a6' },
+  { bg:'rgba(239,68,68,0.12)',   text:'#fca5a5', bar:'#ef4444' },
+  { bg:'rgba(59,130,246,0.12)',  text:'#93c5fd', bar:'#3b82f6' },
+  { bg:'rgba(234,179,8,0.12)',   text:'#fde047', bar:'#eab308' },
+  { bg:'rgba(236,72,153,0.12)',  text:'#f9a8d4', bar:'#ec4899' },
+];
+const PALETTE_LIGHT = [
+  { bg:'#f3e8ff', text:'#6b21a8', bar:'#9333ea' },
+  { bg:'#ccfbf1', text:'#134e4a', bar:'#0d9488' },
+  { bg:'#fee2e2', text:'#991b1b', bar:'#dc2626' },
+  { bg:'#dbeafe', text:'#1e3a8a', bar:'#2563eb' },
+  { bg:'#fef9c3', text:'#713f12', bar:'#ca8a04' },
+  { bg:'#fce7f3', text:'#831843', bar:'#db2777' },
+];
+const _scCache = {};
 function sc(s) {
+  const key = (s || '').toUpperCase();
   const isDark = html.getAttribute('data-theme') === 'dark';
-  const map = isDark ? SC : SC_LIGHT;
-  return map[(s||'').toUpperCase()] || (isDark
-    ? { bg:'rgba(107,158,138,0.12)', text:'#6b9e8a', bar:'#6b9e8a' }
-    : { bg:'#f0faf6', text:'#3d7a65', bar:'#3d7a65' });
+  const themeKey = isDark ? 'd' : 'l';
+  if (_scCache[key + themeKey]) return _scCache[key + themeKey];
+  const known = isDark ? KNOWN_DARK : KNOWN_LIGHT;
+  if (known[key]) { _scCache[key + themeKey] = known[key]; return known[key]; }
+  // Auto-assign a color from palette based on alphabetical position
+  const palette = isDark ? PALETTE_DARK : PALETTE_LIGHT;
+  const idx = key.split('').reduce((a, c) => a + c.charCodeAt(0), 0) % palette.length;
+  const result = palette[idx];
+  _scCache[key + themeKey] = result;
+  return result;
 }
 
+/* ── NO SAMPLE DATA — real Drive folder required ── */
 
 /* ── STATE ── */
 let all = [], filtered = [], aStrand = '', aGrade = '';
@@ -713,6 +878,10 @@ const CACHE_TTL_MS   = 30 * 60 * 1000; // 30 minutes
     </div>`;
     return;
   }
+  // Load splash text and logo from Drive root (non-blocking)
+  loadSplashText(DRIVE_FOLDER_ID);
+  loadSchoolLogo(DRIVE_FOLDER_ID);
+
   // Try loading from cache first for instant display
   const cached = loadCache();
   if (cached) {
@@ -769,27 +938,81 @@ async function refreshInBackground() {
   }
 }
 
-/* ── DRIVE SCAN ── */
-async function fetchPapersFromDrive() {
-  const q = encodeURIComponent(`'${DRIVE_FOLDER_ID}' in parents and trashed=false`);
-  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=1000&key=${GOOGLE_API_KEY}`);
+/* ── DRIVE SCAN — recursive: Strand > School Year > files ── */
+async function driveList(folderId) {
+  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
+  const res = await fetch(
+    `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType)&pageSize=1000&key=${GOOGLE_API_KEY}`
+  );
   if (!res.ok) { const e = await res.json(); throw new Error((e.error && e.error.message) || res.status); }
   const { files = [] } = await res.json();
+  return files;
+}
 
-  const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
+const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
+
+async function scanFolder(folderId, strandName, schoolYear) {
+  // Scan a leaf folder (contains PDF+TXT pairs) and return papers
+  const files = await driveList(folderId);
   const txtMap = {};
-  files.filter(f => f.name.toLowerCase().endsWith('.txt')).forEach(f => { const c = codeOf(f.name); if (c) txtMap[c] = f; });
+  files.filter(f => f.name.toLowerCase().endsWith('.txt'))
+       .forEach(f => { const c = codeOf(f.name); if (c) txtMap[c] = f; });
 
   const papers = [];
   for (const pdf of files.filter(f => f.name.toLowerCase().endsWith('.pdf'))) {
     const code = codeOf(pdf.name);
     if (!code || !txtMap[code]) continue;
     try {
-      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
+      const r = await fetch(
+        `https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`
+      );
       if (!r.ok) throw new Error(r.status);
-      papers.push({ code, ...parseTxt(await r.text()), pdfId: pdf.id });
+      const parsed = parseTxt(await r.text());
+      // Folder structure overrides TXT metadata for strand and school year
+      papers.push({
+        code,
+        ...parsed,
+        strand:     strandName  || parsed.strand,
+        schoolyear: schoolYear  || parsed.schoolyear,
+        pdfId: pdf.id,
+      });
     } catch(e) { console.warn('TXT read failed for', code, e); }
   }
+  return papers;
+}
+
+async function fetchPapersFromDrive() {
+  // Level 1: root folder → strand subfolders
+  const rootItems = await driveList(DRIVE_FOLDER_ID);
+  const FOLDER = 'application/vnd.google-apps.folder';
+
+  const strandFolders = rootItems.filter(f => f.mimeType === FOLDER);
+  const papers = [];
+
+  // Also scan any loose PDF+TXT pairs sitting directly in root
+  const rootPapers = await scanFolder(DRIVE_FOLDER_ID, '', '');
+  papers.push(...rootPapers);
+
+  for (const strandFolder of strandFolders) {
+    const strandName = strandFolder.name.toUpperCase();
+
+    // Level 2: strand folder → school year subfolders
+    const strandItems = await driveList(strandFolder.id);
+    const yearFolders = strandItems.filter(f => f.mimeType === FOLDER);
+
+    // Loose files directly inside strand folder (no year subfolder)
+    const strandLoose = await scanFolder(strandFolder.id, strandName, '');
+    papers.push(...strandLoose);
+
+    for (const yearFolder of yearFolders) {
+      const schoolYear = yearFolder.name; // e.g. "S.Y 23-24"
+
+      // Level 3: year folder → PDF + TXT files
+      const yearPapers = await scanFolder(yearFolder.id, strandName, schoolYear);
+      papers.push(...yearPapers);
+    }
+  }
+
   return papers;
 }
 
@@ -854,12 +1077,18 @@ function parseTxt(raw) {
 }
 
 /* ── LOAD PAPERS ── */
+let aYear = '';
 function loadPapers(papers, isSample) {
-  all = papers; aStrand = ''; aGrade = '';
+  all = papers; aStrand = ''; aGrade = ''; aYear = '';
   const strands = [...new Set(papers.map(p => p.strand).filter(Boolean))].sort();
   const grades  = [...new Set(papers.map(p => p.grade).filter(Boolean))].sort();
+  const years   = [...new Set(papers.map(p => p.schoolyear).filter(Boolean))].sort();
   buildChips('strand-chips', strands, () => aStrand, v => { aStrand = v; });
   buildChips('grade-chips',  grades,  () => aGrade,  v => { aGrade  = v; }, g => 'G' + g);
+  buildChips('year-chips',   years,   () => aYear,   v => { aYear   = v; });
+  // Show/hide year filter group depending on whether any years exist
+  document.getElementById('year-filter-group').style.display = years.length ? '' : 'none';
+  document.getElementById('year-filter-sep').style.display   = years.length ? '' : 'none';
   if (isSample && DRIVE_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE') setSyncState('sample', 'Sample data');
   applyFilters();
 }
@@ -882,7 +1111,7 @@ function applyFilters() {
   const q = searchEl.value.toLowerCase().trim();
   filtered = all.filter(p => {
     const mQ = !q || [p.title, p.authors, p.abstract, p.section, p.code, p.subject, p.restype, p.design, p.keywords, p.adviser, p.award, p.schoolyear].some(f => (f||'').toLowerCase().includes(q));
-    return mQ && (!aStrand || p.strand === aStrand) && (!aGrade || p.grade === aGrade);
+    return mQ && (!aStrand || p.strand === aStrand) && (!aGrade || p.grade === aGrade) && (!aYear || p.schoolyear === aYear);
   });
   sortPapers(); renderCards();
 }
@@ -1002,7 +1231,7 @@ function openDrawer(idx) {
 
 document.getElementById('drawer-close').onclick = closeDrawer;
 document.getElementById('drawer-ov').onclick = e => { if (e.target === document.getElementById('drawer-ov')) closeDrawer(); };
-function closeDrawer() { document.getElementById('drawer-ov').classList.remove('open'); document.body.style.overflow = ''; }
+function closeDrawer() { document.getElementById('drawer-ov').classList.remove('open'); document.body.style.overflow = ''; showSplash(); }
 
 /* ── FORCE REFRESH BUTTON ── */
 document.getElementById('refresh-btn').addEventListener('click', () => {
@@ -1011,11 +1240,101 @@ document.getElementById('refresh-btn').addEventListener('click', () => {
 });
 
 /* ── RE-RENDER ON THEME CHANGE (for strand colors) ── */
-toggleBtn.addEventListener('click', () => { if (filtered.length) renderCards(); });
+toggleBtn.addEventListener('click', () => {
+  // Clear color cache so strand colors recalculate for new theme
+  Object.keys(_scCache).forEach(k => delete _scCache[k]);
+  if (filtered.length) renderCards();
+});
 
 /* ── EVENTS ── */
 searchEl.addEventListener('input', applyFilters);
 sortEl.addEventListener('change', () => { sortPapers(); renderCards(); });
+
+/* ── SPLASH TEXT ── */
+const DEFAULT_SPLASHES = [
+  'Also try reading the abstract!',
+  'Research is formalized curiosity!',
+  'Knowledge is experience!',
+  'That's not a bug, it's a feature!',
+  'Powered by Google Drive!',
+  'No backend required!',
+  'S.Y 25-26 edition!',
+  'Loading at the speed of knowledge!',
+  'Have you cited your sources?',
+  'Peer-reviewed by actual peers!',
+  '100% student-made research!',
+  'Now with dark mode!',
+  'Also try STEM!',
+  'BINHS represents!',
+  'Built with Vanilla JS!',
+  'Caffeine not included.',
+  'Try searching by keyword!',
+  'Press 🔄 to refresh!',
+];
+
+let splashLines = [...DEFAULT_SPLASHES];
+
+async function loadSplashText(rootFolderId) {
+  try {
+    const q = encodeURIComponent(`'${rootFolderId}' in parents and name='SplashText.txt' and trashed=false`);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&key=${GOOGLE_API_KEY}`);
+    if (!res.ok) return;
+    const { files = [] } = await res.json();
+    if (!files.length) return;
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${GOOGLE_API_KEY}`);
+    if (!r.ok) return;
+    const text = await r.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length) splashLines = lines;
+  } catch(e) { console.warn('SplashText.txt not loaded', e); }
+}
+
+function getRandomSplash() {
+  return splashLines[Math.floor(Math.random() * splashLines.length)];
+}
+
+function showSplash(text) {
+  const el = document.getElementById('splash-text');
+  if (!el) return;
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow to restart animation
+  el.style.animation = '';
+  el.textContent = text || getRandomSplash();
+}
+
+// Init splash on load
+showSplash();
+
+/* ── SCHOOL LOGO ── */
+async function loadSchoolLogo(rootFolderId) {
+  try {
+    const exts = ['png','jpg','jpeg','webp'];
+    for (const ext of exts) {
+      const q = encodeURIComponent(`'${rootFolderId}' in parents and name='school-logo.${ext}' and trashed=false`);
+      const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&key=${GOOGLE_API_KEY}`);
+      if (!res.ok) continue;
+      const { files = [] } = await res.json();
+      if (!files.length) continue;
+      const url = `https://drive.google.com/thumbnail?id=${files[0].id}&sz=w128`;
+      // Header logo
+      const mark = document.querySelector('.logo-mark');
+      if (mark) {
+        mark.style.background = 'transparent';
+        mark.style.border = '1.5px solid var(--border2)';
+        mark.innerHTML = `<img src="${url}" alt="School Logo" style="width:30px;height:30px;border-radius:6px;object-fit:contain">`;
+      }
+      // Footer logo
+      const footerWrap = document.getElementById('footer-logo-wrap');
+      if (footerWrap) {
+        footerWrap.outerHTML = `<img src="${url}" alt="School Logo" class="footer-logo-img">`;
+      }
+      break;
+    }
+  } catch(e) { console.warn('Logo not loaded', e); }
+}
+
+/* ── FOOTER YEAR ── */
+document.getElementById('footer-year').textContent = new Date().getFullYear();
 
 /* ── HELPERS ── */
 function setSyncState(s, l) {
