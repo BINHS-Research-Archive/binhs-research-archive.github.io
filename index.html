@@ -449,12 +449,12 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 /* Sticky top bar — always visible, never scrolls away */
 .drawer-top{
   flex-shrink:0;
-  position:sticky;top:0;
+  position:relative;
   background:var(--surface);
   z-index:10;
   transition:background .25s;
 }
-.drawer-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0.75rem auto 0.6rem}
+.drawer-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0.75rem auto 0.5rem}
 .drawer-accent-bar{height:4px}
 .drawer-close{
   position:absolute;top:0.6rem;right:0.85rem;
@@ -1403,6 +1403,8 @@ function openDrawer(idx) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       Share
     </button>`;
+  saveScrollPos();
+  history.pushState({ drawer: true }, '');
   document.getElementById('drawer-ov').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1543,11 +1545,17 @@ function saveScrollPos() { savedScrollY = window.scrollY; }
 function restoreScrollPos() {
   requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: 'instant' }));
 }
-// Patch openDrawer to save scroll and closeDrawer to restore
-const _origOpen = openDrawer;
-window.openDrawer = function(idx) { saveScrollPos(); _origOpen(idx); };
+// Patch closeDrawer to restore scroll
 const _origClose = closeDrawer;
 window.closeDrawer = function() { _origClose(); restoreScrollPos(); };
+
+// Patch openDrawer — single wrapper combining scroll save + history push
+const _origOpenBase = openDrawer;
+window.openDrawer = function(idx) {
+  saveScrollPos();
+  history.pushState({ drawer: true }, '');
+  _origOpenBase(idx);
+};
 
 /* ── BACK BUTTON CLOSES DRAWER ── */
 window.addEventListener('popstate', () => {
@@ -1559,11 +1567,7 @@ window.addEventListener('popstate', () => {
     closeDrawer();
   }
 });
-const _origOpenDrawer = window.openDrawer;
-window.openDrawer = function(idx) {
-  history.pushState({ drawer: true }, '');
-  _origOpenDrawer(idx);
-};
+
 
 /* ── KEYBOARD SHORTCUTS ── */
 document.addEventListener('keydown', e => {
