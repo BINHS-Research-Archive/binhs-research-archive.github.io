@@ -673,7 +673,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 .filter-dropdown-btn svg{transition:transform .2s}
 .filter-dropdown-btn.open svg{transform:rotate(180deg)}
 .filter-dropdown-menu{
-  position:absolute;top:calc(100% + 6px);left:0;z-index:400;
+  position:fixed;z-index:9999;
   background:var(--surface);border:1.5px solid var(--border2);
   border-radius:12px;min-width:160px;max-height:260px;overflow-y:auto;
   box-shadow:var(--shadow-md);animation:fadeUp .15s ease;
@@ -814,7 +814,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
     <!-- Col 2: Links & Credits -->
     <div class="footer-col">
       <div class="footer-col-title">Connect</div>
-      <a class="footer-link" id="fb-link" href="https://facebook.com/TO_BE_ADDED" target="_blank" rel="noopener">
+      <a class="footer-link" id="fb-link" href="https://www.facebook.com/profile.php?id=100083805633968" target="_blank" rel="noopener">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         Facebook Page
       </a>
@@ -1194,12 +1194,32 @@ function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
         const isOpen = menu.style.display !== 'none';
         document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
         document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
-        menu.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          // Position using fixed coords to escape any overflow clipping
+          const rect = btn.getBoundingClientRect();
+          menu.style.display = 'block';
+          menu.style.top  = (rect.bottom + 6) + 'px';
+          menu.style.left = rect.left + 'px';
+          // Flip up if near bottom of screen
+          const menuH = menu.offsetHeight;
+          if (rect.bottom + 6 + menuH > window.innerHeight) {
+            menu.style.top = (rect.top - menuH - 6) + 'px';
+          }
+          // Flip left if overflows right edge
+          const menuW = menu.offsetWidth;
+          if (rect.left + menuW > window.innerWidth) {
+            menu.style.left = (rect.right - menuW) + 'px';
+          }
+        }
         btn.classList.toggle('open', !isOpen);
       };
       dd.appendChild(btn);
-      dd.appendChild(menu);
+      document.body.appendChild(menu); // attach to body to escape overflow clipping
       wrap.appendChild(dd);
+      // Clean up menu when dropdown is re-rendered
+      const oldMenu = document.querySelector(`.filter-dropdown-menu[data-for="${id}"]`);
+      if (oldMenu) oldMenu.remove();
+      menu.setAttribute('data-for', id);
     } else {
       wrap.innerHTML = ['', ...vals].map(v =>
         `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
@@ -1886,11 +1906,14 @@ function parseTxt(raw) {
   };
 }
 
-/* ── CLOSE DROPDOWNS ON OUTSIDE CLICK ── */
-document.addEventListener('click', () => {
+/* ── CLOSE DROPDOWNS ON OUTSIDE CLICK / SCROLL / RESIZE ── */
+function closeAllDropdowns() {
   document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
   document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
-});
+}
+document.addEventListener('click', closeAllDropdowns);
+window.addEventListener('scroll', closeAllDropdowns, { passive: true });
+window.addEventListener('resize', closeAllDropdowns, { passive: true });
 
 /* ── CHECK SHARE LINK ON LOAD ── */
 checkShareLink();
