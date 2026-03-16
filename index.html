@@ -1105,6 +1105,66 @@ const searchEl = document.getElementById('search');
 const sortEl   = document.getElementById('sort-sel');
 const countEl  = document.getElementById('count-label');
 
+/* ── SPLASH TEXT ── */
+const DEFAULT_SPLASHES = [
+  "Also try reading the abstract!",
+  "Research is formalized curiosity!",
+  "Made with AI for Humans",
+  "That's not a bug, it's a feature!",
+  "Powered by Google Drive!",
+  "Inside Jokes are Allowed",
+  "S.Y 25-26 edition!",
+  "Loading at the speed of knowledge!",
+  "Have you cited your sources?",
+  "Is the RRL for free?",
+  "The Prototype ain't worky",
+  "Now with dark mode!",
+  "Also try STEM!",
+  "BINHS represents!",
+  "Join BYTE, don't let the flame die out",
+  "Caffeine not included.",
+  "Press Alt + F4 for a suprize",
+  "Press the refresh button to sync!",
+  "Bulihan's finest research, online!",
+  "Don't forget to cite your sources!",
+  "New papers added every semester!",
+  "Filter by strand to find your field!",
+];
+
+let splashLines = [...DEFAULT_SPLASHES];
+
+async function loadSplashText(rootFolderId) {
+  try {
+    const q = encodeURIComponent(`'${rootFolderId}' in parents and name='SplashText.txt' and trashed=false`);
+    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&key=${GOOGLE_API_KEY}`);
+    if (!res.ok) return;
+    const { files = [] } = await res.json();
+    if (!files.length) return;
+    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${GOOGLE_API_KEY}`);
+    if (!r.ok) return;
+    const text = await r.text();
+    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
+    if (lines.length) splashLines = lines;
+  } catch(e) { console.warn('SplashText.txt not loaded', e); }
+}
+
+function getRandomSplash() {
+  return splashLines[Math.floor(Math.random() * splashLines.length)];
+}
+
+function showSplash(text) {
+  const el = document.getElementById('splash-text');
+  if (!el) return;
+  el.style.animation = 'none';
+  el.offsetHeight; // reflow to restart animation
+  el.style.animation = '';
+  el.textContent = text || getRandomSplash();
+}
+
+// Init splash on load
+showSplash();
+
+
 /* ── CACHE CONFIG ── */
 const CACHE_KEY    = 'bytelib-papers-cache';
 const CACHE_VER    = 'v3'; // bump this to invalidate all caches on format change
@@ -1353,6 +1413,54 @@ function parseTxt(raw) {
   };
 }
 
+/* ── FILTER DROPDOWN (>3 items → dropdown) ── */
+const CHIP_THRESHOLD = 3;
+function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
+  const wrap = document.getElementById(id);
+  const render = () => {
+    if (vals.length > CHIP_THRESHOLD) {
+      const active = getV();
+      const label = active ? lbl(active) : 'All';
+      wrap.innerHTML = '';
+      const dd = document.createElement('div');
+      dd.className = 'filter-dropdown';
+      const btn = document.createElement('button');
+      btn.className = 'filter-dropdown-btn' + (active ? ' has-active' : '');
+      btn.innerHTML = `${label} <svg width="10" height="6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg>`;
+      const menu = document.createElement('div');
+      menu.className = 'filter-dropdown-menu';
+      menu.style.display = 'none';
+      ['', ...vals].forEach(v => {
+        const chip = document.createElement('button');
+        chip.className = 'chip' + (v === active ? ' active' : '');
+        chip.textContent = v === '' ? 'All' : lbl(v);
+        chip.onclick = () => { setV(v); menu.style.display = 'none'; btn.classList.remove('open'); render(); applyFilters(); };
+        menu.appendChild(chip);
+      });
+      btn.onclick = e => {
+        e.stopPropagation();
+        const isOpen = menu.style.display !== 'none';
+        document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
+        menu.style.display = isOpen ? 'none' : 'block';
+        btn.classList.toggle('open', !isOpen);
+      };
+      dd.appendChild(btn);
+      dd.appendChild(menu);
+      wrap.appendChild(dd);
+    } else {
+      wrap.innerHTML = ['', ...vals].map(v =>
+        `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
+      ).join('');
+      wrap.querySelectorAll('.chip').forEach(b => {
+        b.onclick = () => { setV(b.dataset.v); render(); applyFilters(); };
+      });
+    }
+  };
+  render();
+}
+
+
 /* ── LOAD PAPERS ── */
 function loadPapers(papers, isSample) {
   all = papers; aStrand = ''; aGrade = ''; aYear = '';
@@ -1535,65 +1643,6 @@ toggleBtn.addEventListener('click', () => {
 /* ── EVENTS ── */
 /* search is handled by debounced listener above */
 sortEl.addEventListener('change', () => { sortPapers(); renderCards(); });
-
-/* ── SPLASH TEXT ── */
-const DEFAULT_SPLASHES = [
-  "Also try reading the abstract!",
-  "Research is formalized curiosity!",
-  "Made with AI for Humans",
-  "That's not a bug, it's a feature!",
-  "Powered by Google Drive!",
-  "Inside Jokes are Allowed",
-  "S.Y 25-26 edition!",
-  "Loading at the speed of knowledge!",
-  "Have you cited your sources?",
-  "Is the RRL for free?",
-  "The Prototype ain't worky",
-  "Now with dark mode!",
-  "Also try STEM!",
-  "BINHS represents!",
-  "Join BYTE, don't let the flame die out",
-  "Caffeine not included.",
-  "Press Alt + F4 for a suprize",
-  "Press the refresh button to sync!",
-  "Bulihan's finest research, online!",
-  "Don't forget to cite your sources!",
-  "New papers added every semester!",
-  "Filter by strand to find your field!",
-];
-
-let splashLines = [...DEFAULT_SPLASHES];
-
-async function loadSplashText(rootFolderId) {
-  try {
-    const q = encodeURIComponent(`'${rootFolderId}' in parents and name='SplashText.txt' and trashed=false`);
-    const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&key=${GOOGLE_API_KEY}`);
-    if (!res.ok) return;
-    const { files = [] } = await res.json();
-    if (!files.length) return;
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${GOOGLE_API_KEY}`);
-    if (!r.ok) return;
-    const text = await r.text();
-    const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
-    if (lines.length) splashLines = lines;
-  } catch(e) { console.warn('SplashText.txt not loaded', e); }
-}
-
-function getRandomSplash() {
-  return splashLines[Math.floor(Math.random() * splashLines.length)];
-}
-
-function showSplash(text) {
-  const el = document.getElementById('splash-text');
-  if (!el) return;
-  el.style.animation = 'none';
-  el.offsetHeight; // reflow to restart animation
-  el.style.animation = '';
-  el.textContent = text || getRandomSplash();
-}
-
-// Init splash on load
-showSplash();
 
 /* ── SCHOOL LOGO ── */
 async function loadSchoolLogo(rootFolderId) {
@@ -1836,53 +1885,6 @@ applyMotion(S.noMotion);
 const motionStyle = document.createElement('style');
 motionStyle.textContent = `body.no-motion *{animation:none!important;transition:none!important}`;
 document.head.appendChild(motionStyle);
-
-/* ── FILTER DROPDOWN (>3 items → dropdown) ── */
-const CHIP_THRESHOLD = 3;
-function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
-  const wrap = document.getElementById(id);
-  const render = () => {
-    if (vals.length > CHIP_THRESHOLD) {
-      const active = getV();
-      const label = active ? lbl(active) : 'All';
-      wrap.innerHTML = '';
-      const dd = document.createElement('div');
-      dd.className = 'filter-dropdown';
-      const btn = document.createElement('button');
-      btn.className = 'filter-dropdown-btn' + (active ? ' has-active' : '');
-      btn.innerHTML = `${label} <svg width="10" height="6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg>`;
-      const menu = document.createElement('div');
-      menu.className = 'filter-dropdown-menu';
-      menu.style.display = 'none';
-      ['', ...vals].forEach(v => {
-        const chip = document.createElement('button');
-        chip.className = 'chip' + (v === active ? ' active' : '');
-        chip.textContent = v === '' ? 'All' : lbl(v);
-        chip.onclick = () => { setV(v); menu.style.display = 'none'; btn.classList.remove('open'); render(); applyFilters(); };
-        menu.appendChild(chip);
-      });
-      btn.onclick = e => {
-        e.stopPropagation();
-        const isOpen = menu.style.display !== 'none';
-        document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
-        document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
-        menu.style.display = isOpen ? 'none' : 'block';
-        btn.classList.toggle('open', !isOpen);
-      };
-      dd.appendChild(btn);
-      dd.appendChild(menu);
-      wrap.appendChild(dd);
-    } else {
-      wrap.innerHTML = ['', ...vals].map(v =>
-        `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
-      ).join('');
-      wrap.querySelectorAll('.chip').forEach(b => {
-        b.onclick = () => { setV(b.dataset.v); render(); applyFilters(); };
-      });
-    }
-  };
-  render();
-}
 
 /* ── CLOSE DROPDOWNS ON OUTSIDE CLICK ── */
 document.addEventListener('click', () => {
