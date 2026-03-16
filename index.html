@@ -439,25 +439,35 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
   border:1.5px solid var(--border2);
   width:100%;max-width:640px;
   border-radius:20px 20px 0 0;
-  max-height:92vh;overflow-y:auto;
+  max-height:92vh;
+  display:flex;flex-direction:column;
   animation:slideUp .28s ease;
-  position:relative;
   transition:background .25s,border-color .25s;
+  overflow:hidden;
 }
 @media(min-width:640px){.drawer{border-radius:16px;max-height:88vh}}
-.drawer-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0.8rem auto 0}
+/* Sticky top bar — always visible, never scrolls away */
+.drawer-top{
+  flex-shrink:0;
+  position:relative;
+  background:var(--surface);
+  z-index:10;
+  transition:background .25s;
+}
+.drawer-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0.75rem auto 0.5rem}
 .drawer-accent-bar{height:4px}
-.drawer-body{padding:1.5rem}
 .drawer-close{
-  position:absolute;top:0.85rem;right:1rem;
+  position:absolute;top:0.6rem;right:0.85rem;
   background:var(--surface2);border:1.5px solid var(--border);
   border-radius:8px;width:32px;height:32px;
   display:grid;place-items:center;
   font-size:0.95rem;color:var(--muted);
   cursor:pointer;transition:color .15s,border-color .15s;
-  line-height:1;
+  line-height:1;z-index:11;
 }
 .drawer-close:hover{color:var(--text);border-color:var(--accent)}
+/* Scrollable content area */
+.drawer-body{padding:1.25rem 1.5rem 1.5rem;overflow-y:auto;flex:1;-webkit-overflow-scrolling:touch}
 .drawer-code{font-size:0.68rem;color:var(--muted2);font-family:monospace;letter-spacing:0.08em;margin-bottom:0.5rem}
 .drawer-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:600;line-height:1.3;margin-bottom:0.75rem;color:var(--text);padding-right:2.5rem}
 .drawer-authors{font-size:0.82rem;color:var(--muted);margin-bottom:1rem;display:flex;gap:0.4rem;align-items:flex-start}
@@ -673,7 +683,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 .filter-dropdown-btn svg{transition:transform .2s}
 .filter-dropdown-btn.open svg{transform:rotate(180deg)}
 .filter-dropdown-menu{
-  position:absolute;top:calc(100% + 6px);left:0;z-index:400;
+  position:fixed;z-index:9999;
   background:var(--surface);border:1.5px solid var(--border2);
   border-radius:12px;min-width:160px;max-height:260px;overflow-y:auto;
   box-shadow:var(--shadow-md);animation:fadeUp .15s ease;
@@ -718,8 +728,8 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
       <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     </div>
     <div class="logo-text">
-      <span class="logo-name">BINHS <span>Research</span></span>
-      <span class="logo-sub">Research Archive</span>
+      <span class="logo-name">BINHS <span>Research</span> Archive</span>
+      <span class="logo-sub">SHS Archived Research</span>
     </div>
   </a>
   <div class="header-right">
@@ -804,7 +814,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
         </div>
         <div>
           <div class="footer-school-name">Bulihan Integrated National High School</div>
-          <div class="footer-school-sub">BINHS Research Archive</div>
+          <div class="footer-school-sub">SHS Research Archive</div>
         </div>
       </div>
       <p class="footer-tagline">A student research library preserving the academic work of BINHS researchers across all strands and school years.</p>
@@ -814,7 +824,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
     <!-- Col 2: Links & Credits -->
     <div class="footer-col">
       <div class="footer-col-title">Connect</div>
-      <a class="footer-link" id="fb-link" href="https://facebook.com/TO_BE_ADDED" target="_blank" rel="noopener">
+      <a class="footer-link" id="fb-link" href="https://www.facebook.com/profile.php?id=100083805633968" target="_blank" rel="noopener">
         <svg width="14" height="14" fill="currentColor" viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>
         Facebook Page
       </a>
@@ -861,9 +871,11 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 <!-- DETAIL DRAWER -->
 <div class="drawer-ov" id="drawer-ov">
   <div class="drawer">
-    <div class="drawer-handle"></div>
-    <div class="drawer-accent-bar" id="d-bar"></div>
-    <button class="drawer-close" id="drawer-close">✕</button>
+    <div class="drawer-top">
+      <div class="drawer-handle"></div>
+      <div class="drawer-accent-bar" id="d-bar"></div>
+      <button class="drawer-close" id="drawer-close">✕</button>
+    </div>
     <div class="drawer-body">
       <div class="drawer-code"    id="d-code"></div>
       <div class="drawer-title"   id="d-title"></div>
@@ -1194,12 +1206,32 @@ function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
         const isOpen = menu.style.display !== 'none';
         document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
         document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
-        menu.style.display = isOpen ? 'none' : 'block';
+        if (!isOpen) {
+          // Position using fixed coords to escape any overflow clipping
+          const rect = btn.getBoundingClientRect();
+          menu.style.display = 'block';
+          menu.style.top  = (rect.bottom + 6) + 'px';
+          menu.style.left = rect.left + 'px';
+          // Flip up if near bottom of screen
+          const menuH = menu.offsetHeight;
+          if (rect.bottom + 6 + menuH > window.innerHeight) {
+            menu.style.top = (rect.top - menuH - 6) + 'px';
+          }
+          // Flip left if overflows right edge
+          const menuW = menu.offsetWidth;
+          if (rect.left + menuW > window.innerWidth) {
+            menu.style.left = (rect.right - menuW) + 'px';
+          }
+        }
         btn.classList.toggle('open', !isOpen);
       };
       dd.appendChild(btn);
-      dd.appendChild(menu);
+      document.body.appendChild(menu); // attach to body to escape overflow clipping
       wrap.appendChild(dd);
+      // Clean up menu when dropdown is re-rendered
+      const oldMenu = document.querySelector(`.filter-dropdown-menu[data-for="${id}"]`);
+      if (oldMenu) oldMenu.remove();
+      menu.setAttribute('data-for', id);
     } else {
       wrap.innerHTML = ['', ...vals].map(v =>
         `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
@@ -1371,13 +1403,15 @@ function openDrawer(idx) {
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
       Share
     </button>`;
+  saveScrollPos();
+  history.pushState({ drawer: true }, '');
   document.getElementById('drawer-ov').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
 document.getElementById('drawer-close').onclick = closeDrawer;
 document.getElementById('drawer-ov').onclick = e => { if (e.target === document.getElementById('drawer-ov')) closeDrawer(); };
-function closeDrawer() { document.getElementById('drawer-ov').classList.remove('open'); document.body.style.overflow = ''; showSplash(); }
+function closeDrawer() { document.getElementById('drawer-ov').classList.remove('open'); document.body.style.overflow = ''; showSplash(); restoreScrollPos(); }
 
 /* ── FORCE REFRESH BUTTON ── */
 document.getElementById('refresh-btn').addEventListener('click', () => {
@@ -1511,11 +1545,7 @@ function saveScrollPos() { savedScrollY = window.scrollY; }
 function restoreScrollPos() {
   requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: 'instant' }));
 }
-// Patch openDrawer to save scroll and closeDrawer to restore
-const _origOpen = openDrawer;
-window.openDrawer = function(idx) { saveScrollPos(); _origOpen(idx); };
-const _origClose = closeDrawer;
-window.closeDrawer = function() { _origClose(); restoreScrollPos(); };
+// openDrawer and closeDrawer handle scroll + history directly — no wrappers needed
 
 /* ── BACK BUTTON CLOSES DRAWER ── */
 window.addEventListener('popstate', () => {
@@ -1527,11 +1557,7 @@ window.addEventListener('popstate', () => {
     closeDrawer();
   }
 });
-const _origOpenDrawer = window.openDrawer;
-window.openDrawer = function(idx) {
-  history.pushState({ drawer: true }, '');
-  _origOpenDrawer(idx);
-};
+
 
 /* ── KEYBOARD SHORTCUTS ── */
 document.addEventListener('keydown', e => {
@@ -1886,11 +1912,14 @@ function parseTxt(raw) {
   };
 }
 
-/* ── CLOSE DROPDOWNS ON OUTSIDE CLICK ── */
-document.addEventListener('click', () => {
+/* ── CLOSE DROPDOWNS ON OUTSIDE CLICK / SCROLL / RESIZE ── */
+function closeAllDropdowns() {
   document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
   document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
-});
+}
+document.addEventListener('click', closeAllDropdowns);
+window.addEventListener('scroll', closeAllDropdowns, { passive: true });
+window.addEventListener('resize', closeAllDropdowns, { passive: true });
 
 /* ── CHECK SHARE LINK ON LOAD ── */
 checkShareLink();
