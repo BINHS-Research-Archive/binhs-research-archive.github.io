@@ -855,7 +855,7 @@ function sc(s) {
 /* ── NO SAMPLE DATA — real Drive folder required ── */
 
 /* ── STATE ── */
-let all = [], filtered = [], aStrand = '', aGrade = '';
+let all = [], filtered = [], aStrand = '', aGrade = '', aYear = '';
 const gridEl   = document.getElementById('grid');
 const searchEl = document.getElementById('search');
 const sortEl   = document.getElementById('sort-sel');
@@ -1103,7 +1103,6 @@ function parseTxt(raw) {
 }
 
 /* ── LOAD PAPERS ── */
-let aYear = '';
 function loadPapers(papers, isSample) {
   all = papers; aStrand = ''; aGrade = ''; aYear = '';
   const strands = [...new Set(papers.map(p => p.strand).filter(Boolean))].sort();
