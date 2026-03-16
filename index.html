@@ -510,7 +510,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 .alert-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0}
 
 /* ══════════════════════════════════════════
-   SPLASH TEXT
+   SPLASH TEXT (Minecraft-style)
 ══════════════════════════════════════════ */
 .hero-splash{
   display:inline-block;
@@ -619,7 +619,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
       <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
     </div>
     <div class="logo-text">
-      <span class="logo-name">Bulihan Integrated <span>National High School</span></span>
+      <span class="logo-name">BINHS <span>Research</span></span>
       <span class="logo-sub">Research Archive</span>
     </div>
   </a>
@@ -725,7 +725,6 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
       <div class="footer-credit-item">
         <strong>Developers</strong><br>
         <span class="footer-credit-role">STEM 12 Marie Curie</span>
-
       </div>
       <div class="footer-credit-item">
         <strong>Project Adviser</strong><br>
@@ -878,20 +877,25 @@ const CACHE_TTL_MS   = 30 * 60 * 1000; // 30 minutes
     </div>`;
     return;
   }
-  // Load splash text and logo from Drive root (non-blocking)
-  loadSplashText(DRIVE_FOLDER_ID);
-  loadSchoolLogo(DRIVE_FOLDER_ID);
 
-  // Try loading from cache first for instant display
+  // Non-blocking: load splash + logo from Drive root in parallel
+  Promise.all([
+    loadSplashText(DRIVE_FOLDER_ID),
+    loadSchoolLogo(DRIVE_FOLDER_ID),
+  ]).catch(() => {}); // never block init on these
+
+  // Try cache first for instant display
   const cached = loadCache();
-  if (cached) {
+  if (cached && cached.length) {
     loadPapers(cached, false);
-    setSyncState('live', `${cached.length} papers (cached)`);
-    // Refresh in background if cache is older than TTL
     const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
-    if (Date.now() - (meta.ts || 0) > CACHE_TTL_MS) {
-      refreshInBackground();
-    }
+    const age  = Date.now() - (meta.ts || 0);
+    const cacheTime = meta.ts
+      ? new Date(meta.ts).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
+      : '';
+    setSyncState('live', `${cached.length} papers · cached ${cacheTime}`);
+    // Only background-refresh if cache is stale
+    if (age > CACHE_TTL_MS) refreshInBackground();
   } else {
     loadFromDrive();
   }
@@ -918,102 +922,121 @@ function clearCache() {
 }
 
 async function refreshInBackground() {
-  // Silently re-fetch without showing loading state, update if results differ
   try {
     const papers = await fetchPapersFromDrive();
     if (papers && papers.length) {
       saveCache(papers);
-      setSyncState('live', `${papers.length} papers`);
-      const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
-      const cacheTime = meta.ts ? new Date(meta.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
-      setSyncState('live', `${papers.length} papers · updated ${cacheTime}`);
+      const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+      setSyncState('live', `${papers.length} papers · updated ${now}`);
       loadPapers(papers, false);
     }
   } catch(e) {
-    console.warn('Background refresh failed', e);
-    // Keep showing cached data, show subtle warning
-    const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
-    const cacheTime = meta.ts ? new Date(meta.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'earlier';
-    setSyncState('sample', `Cached · ${cacheTime}`);
+    console.warn('Background refresh failed:', e.message);
+    // Don't change sync state — keep showing cached data silently
   }
 }
 
-/* ── DRIVE SCAN — recursive: Strand > School Year > files ── */
+/* ── FETCH WITH TIMEOUT — prevents infinite "Syncing" hang ── */
+function fetchWithTimeout(url, ms = 15000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  return fetch(url, { signal: controller.signal })
+    .finally(() => clearTimeout(timer));
+}
+
+/* ── DRIVE SCAN — parallel: Strand > School Year > files ── */
+const FOLDER_MIME = 'application/vnd.google-apps.folder';
+const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
+
 async function driveList(folderId) {
   const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
-  const res = await fetch(
-    `https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType)&pageSize=1000&key=${GOOGLE_API_KEY}`
-  );
+  const res = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType)&pageSize=1000&key=${GOOGLE_API_KEY}`);
   if (!res.ok) { const e = await res.json(); throw new Error((e.error && e.error.message) || res.status); }
   const { files = [] } = await res.json();
   return files;
 }
 
-const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
-
-async function scanFolder(folderId, strandName, schoolYear) {
-  // Scan a leaf folder (contains PDF+TXT pairs) and return papers
-  const files = await driveList(folderId);
+// Extract papers from a pre-fetched file list (no extra API call)
+async function extractPapers(files, strandName, schoolYear) {
   const txtMap = {};
   files.filter(f => f.name.toLowerCase().endsWith('.txt'))
        .forEach(f => { const c = codeOf(f.name); if (c) txtMap[c] = f; });
 
-  const papers = [];
-  for (const pdf of files.filter(f => f.name.toLowerCase().endsWith('.pdf'))) {
-    const code = codeOf(pdf.name);
-    if (!code || !txtMap[code]) continue;
-    try {
-      const r = await fetch(
-        `https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`
-      );
-      if (!r.ok) throw new Error(r.status);
+  const pdfs = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
+
+  // Fetch all TXT files in parallel
+  const results = await Promise.allSettled(
+    pdfs.map(async pdf => {
+      const code = codeOf(pdf.name);
+      if (!code || !txtMap[code]) return null;
+      const r = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
+      if (!r.ok) throw new Error(`TXT fetch failed for ${code}: ${r.status}`);
       const parsed = parseTxt(await r.text());
-      // Folder structure overrides TXT metadata for strand and school year
-      papers.push({
+      return {
         code,
         ...parsed,
-        strand:     strandName  || parsed.strand,
-        schoolyear: schoolYear  || parsed.schoolyear,
+        strand:     strandName || parsed.strand,
+        schoolyear: schoolYear || parsed.schoolyear,
         pdfId: pdf.id,
-      });
-    } catch(e) { console.warn('TXT read failed for', code, e); }
-  }
-  return papers;
+      };
+    })
+  );
+
+  return results
+    .filter(r => r.status === 'fulfilled' && r.value)
+    .map(r => r.value);
 }
 
 async function fetchPapersFromDrive() {
-  // Level 1: root folder → strand subfolders
+  // Step 1: list root folder
   const rootItems = await driveList(DRIVE_FOLDER_ID);
-  const FOLDER = 'application/vnd.google-apps.folder';
+  const strandFolders = rootItems.filter(f => f.mimeType === FOLDER_MIME);
 
-  const strandFolders = rootItems.filter(f => f.mimeType === FOLDER);
-  const papers = [];
+  // Step 2: list all strand folders in parallel
+  const strandContents = await Promise.all(
+    strandFolders.map(async sf => ({
+      name: sf.name.toUpperCase(),
+      id:   sf.id,
+      items: await driveList(sf.id),
+    }))
+  );
 
-  // Also scan any loose PDF+TXT pairs sitting directly in root
-  const rootPapers = await scanFolder(DRIVE_FOLDER_ID, '', '');
-  papers.push(...rootPapers);
+  // Step 3: list all year folders in parallel (across all strands at once)
+  const yearFetchJobs = [];
+  for (const strand of strandContents) {
+    const yearFolders = strand.items.filter(f => f.mimeType === FOLDER_MIME);
+    for (const yf of yearFolders) {
+      yearFetchJobs.push({ strandName: strand.name, yearName: yf.name, id: yf.id });
+    }
+  }
+  const yearContents = await Promise.all(
+    yearFetchJobs.map(async job => ({
+      ...job,
+      items: await driveList(job.id),
+    }))
+  );
 
-  for (const strandFolder of strandFolders) {
-    const strandName = strandFolder.name.toUpperCase();
+  // Step 4: extract papers from all year folders + loose files — all in parallel
+  const allExtractions = [];
 
-    // Level 2: strand folder → school year subfolders
-    const strandItems = await driveList(strandFolder.id);
-    const yearFolders = strandItems.filter(f => f.mimeType === FOLDER);
+  // Loose files in root
+  allExtractions.push(extractPapers(rootItems, '', ''));
 
-    // Loose files directly inside strand folder (no year subfolder)
-    const strandLoose = await scanFolder(strandFolder.id, strandName, '');
-    papers.push(...strandLoose);
-
-    for (const yearFolder of yearFolders) {
-      const schoolYear = yearFolder.name; // e.g. "S.Y 23-24"
-
-      // Level 3: year folder → PDF + TXT files
-      const yearPapers = await scanFolder(yearFolder.id, strandName, schoolYear);
-      papers.push(...yearPapers);
+  // Loose files directly inside each strand folder (no year subfolder)
+  for (const strand of strandContents) {
+    const looseFiles = strand.items.filter(f => f.mimeType !== FOLDER_MIME);
+    if (looseFiles.length) {
+      allExtractions.push(extractPapers(looseFiles, strand.name, ''));
     }
   }
 
-  return papers;
+  // Files inside year folders
+  for (const yc of yearContents) {
+    allExtractions.push(extractPapers(yc.items, yc.strandName, yc.yearName));
+  }
+
+  const paperGroups = await Promise.all(allExtractions);
+  return paperGroups.flat();
 }
 
 async function loadFromDrive() {
@@ -1023,25 +1046,28 @@ async function loadFromDrive() {
   try {
     const papers = await fetchPapersFromDrive();
     if (!papers.length) {
-      setSyncState('error', 'No papers');
-      gridEl.innerHTML = '<div class="state-box"><div class="icon">📂</div><h3>No papers found</h3><p>Make sure the folder contains PDF + TXT pairs with matching <strong>-XXXX</strong> codes and is set to "Anyone with the link can view."</p></div>';
+      setSyncState('error', 'No papers found');
+      gridEl.innerHTML = '<div class="state-box"><div class="icon">📂</div><h3>No papers found</h3><p>Make sure the folder contains PDF + TXT pairs with matching <strong>-XXXX</strong> codes and that the folder is set to "Anyone with the link can view."</p></div>';
       return;
     }
     saveCache(papers);
-    const cacheTime = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
-    setSyncState('live', `${papers.length} papers · synced ${cacheTime}`);
+    const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    setSyncState('live', `${papers.length} papers · synced ${now}`);
     loadPapers(papers, false);
   } catch(err) {
-    console.error(err);
-    setSyncState('error', 'Sync failed');
-    // Try serving stale cache if available
+    console.error('Drive load failed:', err);
     const stale = loadCache();
     if (stale && stale.length) {
-      showAlert('⚠️', `Could not refresh: ${err.message}. Showing cached data from last sync.`);
+      setSyncState('sample', 'Cached — sync failed');
+      showAlert('⚠️', `Could not refresh from Drive: ${err.message}. Showing last cached data.`);
       loadPapers(stale, false);
     } else {
-      showAlert('⚠️', `Could not load folder: ${err.message}. Check the Folder ID and API Key in the source code.`);
-      gridEl.innerHTML = '<div class="state-box"><div class="icon">⚠️</div><h3>Could not load library</h3><p>Check your Folder ID and API Key in the source code, and make sure the folder is set to "Anyone with the link can view."</p></div>';
+      setSyncState('error', 'Failed to load');
+      const hint = err.name === 'AbortError'
+        ? 'Request timed out. Check your internet connection and try refreshing.'
+        : `${err.message}. Check the Folder ID, API Key, and folder sharing settings.`;
+      showAlert('⚠️', hint);
+      gridEl.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><h3>Could not load library</h3><p>${hint}</p></div>`;
     }
   }
 }
@@ -1252,24 +1278,28 @@ sortEl.addEventListener('change', () => { sortPapers(); renderCards(); });
 
 /* ── SPLASH TEXT ── */
 const DEFAULT_SPLASHES = [
-  'Also try reading the abstract!',
-  'Research is formalized curiosity!',
-  'Knowledge is experience!',
-  'Thats not a bug, its a feature!',
-  'Powered by Google Drive!',
-  'No backend required!',
-  'S.Y 25-26 edition!',
-  'Loading at the speed of knowledge!',
-  'Have you cited your sources?',
-  'Peer-reviewed by actual peers!',
-  '100% student-made research!',
-  'Now with dark mode!',
-  'Also try STEM!',
-  'BINHS represents!',
-  'Built with Vanilla JS!',
-  'Caffeine not included.',
-  'Try searching by keyword!',
-  'Press 🔄 to refresh!',
+  "Also try reading the abstract!",
+  "Research is formalized curiosity!",
+  "Knowledge is experience!",
+  "That's not a bug, it's a feature!",
+  "Powered by Google Drive!",
+  "No backend required!",
+  "S.Y 25-26 edition!",
+  "Loading at the speed of knowledge!",
+  "Have you cited your sources?",
+  "Peer-reviewed by actual peers!",
+  "100% student-made research!",
+  "Now with dark mode!",
+  "Also try STEM!",
+  "BINHS represents!",
+  "Built with Vanilla JS!",
+  "Caffeine not included.",
+  "Try searching by keyword!",
+  "Press the refresh button to sync!",
+  "Bulihan's finest research, online!",
+  "Don't forget to cite your sources!",
+  "New papers added every semester!",
+  "Filter by strand to find your field!",
 ];
 
 let splashLines = [...DEFAULT_SPLASHES];
