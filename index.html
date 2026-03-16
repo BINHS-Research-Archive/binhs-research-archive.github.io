@@ -1,0 +1,1033 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ByteLib — Research Portal</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;1,400&display=swap" rel="stylesheet">
+<style>
+/* ══════════════════════════════════════════
+   ⚙️  CONFIGURATION — edit these two values
+   ══════════════════════════════════════════ */
+/* See JS at bottom of file */
+
+/* ══════════════════════════════════════════
+   DARK THEME (default)
+══════════════════════════════════════════ */
+:root, [data-theme="dark"] {
+  --bg:          #0a0f0d;
+  --bg2:         #0f1612;
+  --surface:     #141a17;
+  --surface2:    #1a2420;
+  --surface3:    #202e28;
+  --border:      rgba(0,200,140,0.10);
+  --border2:     rgba(0,200,140,0.20);
+  --text:        #e8f5f0;
+  --text2:       #b8d4c8;
+  --muted:       #6b9e8a;
+  --muted2:      #4a7060;
+
+  --accent:      #00c896;
+  --accent-lt:   rgba(0,200,150,0.12);
+  --accent-dk:   #00a87e;
+  --accent-glow: rgba(0,200,150,0.25);
+
+  --hero-bg:     #0a0f0d;
+  --hero-text:   #e8f5f0;
+  --hero-sub:    rgba(232,245,240,0.5);
+  --search-bg:   rgba(255,255,255,0.05);
+  --search-border: rgba(0,200,140,0.25);
+  --search-text: #e8f5f0;
+  --search-ph:   rgba(232,245,240,0.3);
+
+  --header-bg:   rgba(10,15,13,0.95);
+  --header-border: rgba(0,200,140,0.3);
+  --sync-bg:     rgba(255,255,255,0.06);
+  --sync-border: rgba(255,255,255,0.10);
+  --sync-text:   rgba(255,255,255,0.55);
+
+  --card-hover-shadow: 0 8px 32px rgba(0,200,140,0.12);
+  --shadow-sm:   0 1px 3px rgba(0,0,0,0.3);
+  --shadow-md:   0 4px 20px rgba(0,0,0,0.4);
+
+  --toggle-icon: "☀️";
+  --tag-grade-bg: rgba(34,197,94,0.12);
+  --tag-grade-color: #4ade80;
+  --tag-grade-border: rgba(34,197,94,0.25);
+  --tag-section-bg: rgba(139,92,246,0.12);
+  --tag-section-color: #a78bfa;
+  --tag-section-border: rgba(139,92,246,0.25);
+  --tag-date-bg: var(--surface2);
+  --tag-date-color: var(--muted);
+  --tag-date-border: var(--border);
+
+  --footer-bg: var(--bg2);
+  --stats-bg: var(--bg);
+  --filter-bg: var(--surface);
+}
+
+/* ══════════════════════════════════════════
+   LIGHT THEME
+══════════════════════════════════════════ */
+[data-theme="light"] {
+  --bg:          #f2f8f5;
+  --bg2:         #e8f2ee;
+  --surface:     #ffffff;
+  --surface2:    #edf7f2;
+  --surface3:    #e0f0ea;
+  --border:      #c8e6da;
+  --border2:     #a8d4c4;
+  --text:        #0a1f18;
+  --text2:       #1a3d30;
+  --muted:       #3d7a65;
+  --muted2:      #6aaa90;
+
+  --accent:      #00a874;
+  --accent-lt:   #e0f7ee;
+  --accent-dk:   #008a60;
+  --accent-glow: rgba(0,168,116,0.15);
+
+  --hero-bg:     #0a1f18;
+  --hero-text:   #e8f5f0;
+  --hero-sub:    rgba(232,245,240,0.55);
+  --search-bg:   rgba(255,255,255,0.1);
+  --search-border: rgba(0,200,140,0.35);
+  --search-text: #e8f5f0;
+  --search-ph:   rgba(232,245,240,0.4);
+
+  --header-bg:   rgba(255,255,255,0.95);
+  --header-border: #c8e6da;
+  --sync-bg:     #edf7f2;
+  --sync-border: #c8e6da;
+  --sync-text:   #3d7a65;
+
+  --card-hover-shadow: 0 8px 28px rgba(0,168,116,0.14);
+  --shadow-sm:   0 1px 3px rgba(0,80,50,0.08);
+  --shadow-md:   0 4px 16px rgba(0,80,50,0.12);
+
+  --toggle-icon: "🌙";
+  --tag-grade-bg: #dcfce7;
+  --tag-grade-color: #166534;
+  --tag-grade-border: #86efac;
+  --tag-section-bg: #ede9fe;
+  --tag-section-color: #5b21b6;
+  --tag-section-border: #c4b5fd;
+  --tag-date-bg: var(--surface2);
+  --tag-date-color: var(--muted);
+  --tag-date-border: var(--border);
+
+  --footer-bg: var(--bg2);
+  --stats-bg: var(--bg);
+  --filter-bg: var(--surface);
+}
+
+/* ══════════════════════════════════════════
+   BASE
+══════════════════════════════════════════ */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{
+  font-family:'Plus Jakarta Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;line-height:1.6;
+  transition:background .25s, color .25s;
+}
+button,input,select{font-family:inherit}
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:var(--bg)}
+::-webkit-scrollbar-thumb{background:var(--border2);border-radius:3px}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+@keyframes slideUp{from{opacity:0;transform:translateY(36px)}to{opacity:1;transform:translateY(0)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+header{
+  position:sticky;top:0;z-index:300;
+  background:var(--header-bg);
+  backdrop-filter:blur(20px);
+  border-bottom:1.5px solid var(--header-border);
+  padding:0 1.25rem;height:60px;
+  display:flex;align-items:center;justify-content:space-between;
+  box-shadow:0 2px 20px var(--accent-glow);
+  transition:background .25s, border-color .25s;
+}
+.logo{display:flex;align-items:center;gap:0.65rem;text-decoration:none}
+.logo-mark{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--accent);
+  display:grid;place-items:center;flex-shrink:0;
+  box-shadow:0 0 12px var(--accent-glow);
+}
+.logo-mark svg{width:20px;height:20px;fill:none;stroke:#fff;stroke-width:2.5}
+[data-theme="dark"] .logo-mark svg{stroke:#0a0f0d}
+.logo-text{display:flex;flex-direction:column;line-height:1.1}
+.logo-name{font-size:1rem;font-weight:700;letter-spacing:-0.01em}
+[data-theme="dark"] .logo-name{color:#e8f5f0}
+[data-theme="light"] .logo-name{color:var(--text)}
+.logo-name span{color:var(--accent)}
+.logo-sub{font-size:0.6rem;font-weight:500;letter-spacing:0.05em;text-transform:uppercase;color:var(--muted2)}
+
+.header-right{display:flex;align-items:center;gap:0.6rem}
+.sync-pill{
+  display:flex;align-items:center;gap:0.4rem;
+  background:var(--sync-bg);border:1px solid var(--sync-border);
+  border-radius:20px;padding:0.28rem 0.75rem;
+  font-size:0.7rem;font-weight:500;color:var(--sync-text);
+  white-space:nowrap;transition:background .25s,border-color .25s,color .25s;
+}
+.sync-dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0;box-shadow:0 0 5px var(--accent);animation:pulse 2s ease-in-out infinite}
+.sync-dot.loading{animation:spin .7s linear infinite;box-shadow:0 0 5px #f59e0b;background:#f59e0b}
+.sync-dot.error{background:#ef4444;box-shadow:0 0 5px #ef4444;animation:none}
+.sync-dot.sample{background:var(--muted2);box-shadow:none;animation:none}
+
+/* Theme toggle */
+.theme-toggle{
+  width:36px;height:36px;border-radius:9px;
+  background:var(--surface2);border:1.5px solid var(--border2);
+  display:grid;place-items:center;cursor:pointer;
+  font-size:1rem;transition:all .2s;
+  flex-shrink:0;
+}
+.theme-toggle:hover{background:var(--surface3);border-color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+.hero{
+  background:var(--hero-bg);
+  color:var(--hero-text);
+  padding:3rem 1.25rem 3.5rem;
+  position:relative;overflow:hidden;text-align:center;
+  transition:background .25s;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 90% 70% at 50% 110%, rgba(0,200,140,0.16) 0%, transparent 65%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;inset:0;
+  background:url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%2300c896' fill-opacity='0.035'%3E%3Cpath d='M0 0h20v20H0V0zm20 20h20v20H20V20z'/%3E%3C/g%3E%3C/svg%3E");
+  pointer-events:none;
+}
+.hero-inner{position:relative;z-index:1;max-width:640px;margin:0 auto}
+.hero-eyebrow{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  background:rgba(0,200,140,0.12);border:1px solid rgba(0,200,140,0.28);
+  border-radius:20px;padding:0.3rem 0.9rem;
+  font-size:0.68rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+  margin-bottom:1.1rem;color:var(--accent);
+}
+.hero h1{
+  font-family:'Playfair Display',serif;
+  font-size:clamp(1.75rem,5vw,2.9rem);
+  font-weight:600;line-height:1.2;margin-bottom:0.65rem;
+  color:var(--hero-text);
+}
+.hero h1 em{color:var(--accent);font-style:italic}
+.hero-sub{font-size:0.88rem;color:var(--hero-sub);margin-bottom:2.25rem;font-weight:300}
+
+.search-wrap{
+  background:var(--search-bg);
+  border:1.5px solid var(--search-border);
+  border-radius:12px;display:flex;align-items:center;
+  padding:0 1rem;max-width:540px;margin:0 auto;
+  transition:border-color .2s,background .2s;
+}
+.search-wrap:focus-within{border-color:var(--accent);background:rgba(0,200,140,0.07)}
+.search-wrap svg{color:var(--accent);flex-shrink:0}
+.search-wrap input{
+  flex:1;border:none;outline:none;
+  padding:0.9rem 0.75rem;font-size:0.92rem;
+  color:var(--search-text);background:transparent;
+}
+.search-wrap input::placeholder{color:var(--search-ph)}
+
+/* ══════════════════════════════════════════
+   FILTER BAR
+══════════════════════════════════════════ */
+.filter-bar{
+  background:var(--filter-bg);
+  border-bottom:1.5px solid var(--border);
+  position:sticky;top:60px;z-index:200;
+  box-shadow:var(--shadow-sm);
+  transition:background .25s,border-color .25s;
+}
+.filter-scroll{
+  display:flex;align-items:center;
+  overflow-x:auto;scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+  padding:0 1.25rem;
+}
+.filter-scroll::-webkit-scrollbar{display:none}
+.filter-group{display:flex;align-items:center;gap:0.35rem;padding:0.65rem 0;flex-shrink:0}
+.filter-label{font-size:0.63rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted2);margin-right:0.15rem;white-space:nowrap}
+.chip{
+  padding:0.28rem 0.78rem;
+  background:transparent;border:1.5px solid var(--border2);
+  border-radius:20px;font-size:0.71rem;font-weight:600;
+  color:var(--muted);cursor:pointer;white-space:nowrap;
+  transition:all .15s;
+}
+.chip:hover{border-color:var(--accent);color:var(--accent)}
+.chip.active{
+  background:var(--accent);border-color:var(--accent);
+  color:#fff;
+  box-shadow:0 0 10px var(--accent-glow);
+}
+[data-theme="dark"] .chip.active{color:#0a0f0d}
+.filter-sep{width:1px;height:20px;background:var(--border);margin:0 0.65rem;flex-shrink:0}
+.sort-wrap{margin-left:auto;padding:0.65rem 0;flex-shrink:0}
+select.sort-sel{
+  padding:0.3rem 1.8rem 0.3rem 0.7rem;
+  border:1.5px solid var(--border2);border-radius:8px;
+  font-size:0.71rem;font-weight:600;
+  color:var(--text2);background:var(--surface);
+  cursor:pointer;outline:none;appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b9e8a'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;background-position:right 8px center;
+  transition:border-color .15s,background .25s,color .25s;
+}
+select.sort-sel:hover{border-color:var(--accent)}
+select.sort-sel option{background:var(--surface);color:var(--text)}
+
+/* ══════════════════════════════════════════
+   STATS ROW
+══════════════════════════════════════════ */
+.stats-row{
+  padding:0.6rem 1.25rem;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:0.74rem;color:var(--muted);
+  border-bottom:1px solid var(--border);
+  background:var(--stats-bg);
+  transition:background .25s,color .25s;
+}
+.stats-row strong{color:var(--text)}
+
+/* ══════════════════════════════════════════
+   GRID
+══════════════════════════════════════════ */
+.grid-wrap{padding:1.25rem;max-width:1300px;margin:0 auto}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill, minmax(min(100%, 320px), 1fr));
+  gap:1rem;
+}
+
+/* ══════════════════════════════════════════
+   CARD
+══════════════════════════════════════════ */
+.card{
+  background:var(--surface);
+  border:1.5px solid var(--border);
+  border-radius:12px;overflow:hidden;
+  display:flex;flex-direction:column;
+  cursor:pointer;
+  animation:fadeUp .3s ease both;
+  transition:box-shadow .2s,transform .2s,border-color .2s,background .25s;
+  box-shadow:var(--shadow-sm);
+}
+.card:hover{
+  box-shadow:var(--card-hover-shadow);
+  transform:translateY(-2px);
+  border-color:var(--accent);
+}
+.card:active{transform:translateY(0)}
+
+.card-accent{height:3px;flex-shrink:0}
+.card-body{padding:1.1rem;flex:1;display:flex;flex-direction:column;gap:0.6rem}
+
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;gap:0.5rem}
+.card-code{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;
+  color:var(--muted2);font-family:monospace;
+  background:var(--surface2);padding:0.18rem 0.5rem;border-radius:4px;
+  white-space:nowrap;border:1px solid var(--border);
+}
+.strand-tag{
+  font-size:0.6rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;
+  padding:0.2rem 0.55rem;border-radius:5px;white-space:nowrap;flex-shrink:0;
+}
+.card-title{
+  font-family:'Playfair Display',serif;
+  font-size:0.97rem;font-weight:600;line-height:1.4;color:var(--text);
+}
+.card-authors{
+  font-size:0.74rem;color:var(--muted);
+  display:flex;align-items:flex-start;gap:0.35rem;line-height:1.5;
+}
+.card-authors svg{flex-shrink:0;margin-top:2px}
+.card-abstract{
+  font-size:0.76rem;color:var(--text2);line-height:1.7;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;flex:1;
+}
+.card-tags{display:flex;flex-wrap:wrap;gap:0.35rem;margin-top:0.1rem}
+.tag{font-size:0.61rem;font-weight:600;padding:0.18rem 0.55rem;border-radius:20px;border:1.5px solid;white-space:nowrap}
+.tag-grade{color:var(--tag-grade-color);border-color:var(--tag-grade-border);background:var(--tag-grade-bg)}
+.tag-section{color:var(--tag-section-color);border-color:var(--tag-section-border);background:var(--tag-section-bg)}
+.tag-date{color:var(--tag-date-color);border-color:var(--tag-date-border);background:var(--tag-date-bg)}
+.tag-restype{color:#c026d3;border-color:rgba(192,38,211,0.3);background:rgba(192,38,211,0.08)}
+.tag-design{color:#0891b2;border-color:rgba(8,145,178,0.3);background:rgba(8,145,178,0.08)}
+.tag-subject{color:#d97706;border-color:rgba(217,119,6,0.3);background:rgba(217,119,6,0.08)}
+.tag-sy{color:var(--muted);border-color:var(--border);background:var(--surface2)}
+.tag-award{color:#b45309;border-color:rgba(180,83,9,0.35);background:rgba(254,243,199,0.5)}
+[data-theme="dark"] .tag-restype{color:#e879f9;border-color:rgba(232,121,249,0.3);background:rgba(192,38,211,0.12)}
+[data-theme="dark"] .tag-design{color:#67e8f9;border-color:rgba(103,232,249,0.3);background:rgba(8,145,178,0.12)}
+[data-theme="dark"] .tag-subject{color:#fcd34d;border-color:rgba(252,211,77,0.3);background:rgba(217,119,6,0.12)}
+[data-theme="dark"] .tag-award{color:#fde68a;border-color:rgba(253,230,138,0.35);background:rgba(180,83,9,0.15)}
+
+.card-footer{
+  padding:0.7rem 1.1rem;
+  border-top:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;gap:0.5rem;
+  background:var(--surface2);flex-shrink:0;
+  transition:background .25s,border-color .25s;
+}
+.btn-details{
+  display:flex;align-items:center;gap:0.35rem;
+  padding:0.4rem 0.85rem;background:var(--accent);
+  color:#fff;border:none;border-radius:7px;
+  font-size:0.72rem;font-weight:700;cursor:pointer;
+  text-decoration:none;transition:background .15s,box-shadow .15s;
+  box-shadow:0 0 0 0 var(--accent-glow);
+}
+[data-theme="dark"] .btn-details{color:#0a0f0d}
+.btn-details:hover{background:var(--accent-dk);box-shadow:0 0 12px var(--accent-glow)}
+.btn-dl{
+  display:flex;align-items:center;gap:0.35rem;
+  padding:0.4rem 0.85rem;background:transparent;
+  color:var(--muted);border:1.5px solid var(--border2);
+  border-radius:7px;font-size:0.72rem;font-weight:600;
+  cursor:pointer;text-decoration:none;transition:all .15s;
+}
+.btn-dl:hover{color:var(--accent);border-color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   STATE BOXES
+══════════════════════════════════════════ */
+.state-box{
+  grid-column:1/-1;display:flex;flex-direction:column;
+  align-items:center;padding:5rem 1rem;
+  color:var(--muted);text-align:center;gap:0.65rem;
+}
+.state-box .icon{font-size:2.8rem}
+.state-box h3{font-family:'Playfair Display',serif;font-size:1.2rem;color:var(--text)}
+.state-box p{font-size:0.82rem;max-width:380px;line-height:1.7}
+.spinner{
+  width:34px;height:34px;
+  border:2.5px solid var(--border2);
+  border-top-color:var(--accent);
+  border-radius:50%;animation:spin .7s linear infinite;
+}
+
+/* ══════════════════════════════════════════
+   DETAIL DRAWER
+══════════════════════════════════════════ */
+.drawer-ov{
+  position:fixed;inset:0;z-index:500;
+  background:rgba(0,0,0,0.6);backdrop-filter:blur(4px);
+  display:none;align-items:flex-end;justify-content:center;
+}
+.drawer-ov.open{display:flex}
+@media(min-width:640px){.drawer-ov{align-items:center}}
+.drawer{
+  background:var(--surface);
+  border:1.5px solid var(--border2);
+  width:100%;max-width:640px;
+  border-radius:20px 20px 0 0;
+  max-height:92vh;overflow-y:auto;
+  animation:slideUp .28s ease;
+  position:relative;
+  transition:background .25s,border-color .25s;
+}
+@media(min-width:640px){.drawer{border-radius:16px;max-height:88vh}}
+.drawer-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:0.8rem auto 0}
+.drawer-accent-bar{height:4px}
+.drawer-body{padding:1.5rem}
+.drawer-close{
+  position:absolute;top:0.85rem;right:1rem;
+  background:var(--surface2);border:1.5px solid var(--border);
+  border-radius:8px;width:32px;height:32px;
+  display:grid;place-items:center;
+  font-size:0.95rem;color:var(--muted);
+  cursor:pointer;transition:color .15s,border-color .15s;
+  line-height:1;
+}
+.drawer-close:hover{color:var(--text);border-color:var(--accent)}
+.drawer-code{font-size:0.68rem;color:var(--muted2);font-family:monospace;letter-spacing:0.08em;margin-bottom:0.5rem}
+.drawer-title{font-family:'Playfair Display',serif;font-size:1.35rem;font-weight:600;line-height:1.3;margin-bottom:0.75rem;color:var(--text);padding-right:2.5rem}
+.drawer-authors{font-size:0.82rem;color:var(--muted);margin-bottom:1rem;display:flex;gap:0.4rem;align-items:flex-start}
+.drawer-authors strong{color:var(--text);font-weight:600}
+.drawer-meta{display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1.3rem}
+.drawer-abs-label{font-size:0.67rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:var(--muted);margin-bottom:0.5rem}
+.drawer-info{display:grid;grid-template-columns:1fr 1fr;gap:0.6rem 1rem;margin-bottom:1.3rem}
+.drawer-info-item{display:flex;flex-direction:column;gap:0.18rem}
+.drawer-info-label{font-size:0.62rem;font-weight:700;letter-spacing:0.09em;text-transform:uppercase;color:var(--muted2)}
+.drawer-info-value{font-size:0.82rem;color:var(--text2);line-height:1.4}
+.drawer-info-value.keywords{display:flex;flex-wrap:wrap;gap:0.3rem}
+.kw-pill{font-size:0.65rem;font-weight:500;padding:0.15rem 0.5rem;border-radius:20px;background:var(--accent-lt);color:var(--accent);border:1px solid var(--border2)}
+.drawer-info-full{grid-column:1/-1}
+@media(max-width:400px){.drawer-info{grid-template-columns:1fr}}
+.drawer-abstract{font-size:0.84rem;color:var(--text2);line-height:1.85;margin-bottom:1.5rem;white-space:pre-wrap;word-break:break-word}
+.drawer-actions{display:flex;gap:0.65rem;flex-wrap:wrap}
+.btn-read-pdf{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.7rem 1.4rem;background:var(--accent);
+  color:#fff;border:none;border-radius:10px;
+  font-size:0.85rem;font-weight:700;cursor:pointer;
+  text-decoration:none;transition:background .15s,box-shadow .15s;
+  flex:1;justify-content:center;
+  box-shadow:0 0 16px var(--accent-glow);
+}
+[data-theme="dark"] .btn-read-pdf{color:#0a0f0d}
+.btn-read-pdf:hover{background:var(--accent-dk)}
+.btn-dl-pdf{
+  display:flex;align-items:center;gap:0.5rem;
+  padding:0.7rem 1.2rem;background:transparent;
+  color:var(--text2);border:1.5px solid var(--border2);
+  border-radius:10px;font-size:0.85rem;font-weight:600;
+  cursor:pointer;text-decoration:none;
+  transition:all .15s;flex:1;justify-content:center;
+}
+.btn-dl-pdf:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ══════════════════════════════════════════
+   ALERT
+══════════════════════════════════════════ */
+#alert-area{padding:0 1.25rem}
+.alert{
+  display:flex;align-items:flex-start;gap:0.75rem;
+  background:var(--accent-lt);border:1.5px solid var(--border2);
+  border-radius:10px;padding:0.85rem 1rem;margin:1rem 0;
+  font-size:0.81rem;color:var(--text2);
+}
+.alert-icon{font-size:1.1rem;flex-shrink:0;margin-top:1px}
+.alert a{color:var(--accent);cursor:pointer;font-weight:600;text-decoration:underline}
+.alert-close{margin-left:auto;background:none;border:none;color:var(--muted);cursor:pointer;font-size:1rem;line-height:1;flex-shrink:0}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer{
+  background:var(--footer-bg);
+  border-top:1px solid var(--border);
+  text-align:center;padding:1.5rem 1rem;
+  font-size:0.72rem;color:var(--muted2);
+  transition:background .25s,border-color .25s;
+}
+
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media(max-width:480px){
+  .logo-sub{display:none}
+  .sync-pill span{display:none}
+  .hero{padding:2.25rem 1rem 2.75rem}
+  .hero h1{font-size:1.65rem}
+  .grid-wrap{padding:0.85rem}
+  .grid{gap:0.75rem}
+  .card-footer{flex-direction:column;gap:0.4rem}
+  .btn-details,.btn-dl{width:100%;justify-content:center}
+  .drawer-actions{flex-direction:column}
+  .btn-read-pdf,.btn-dl-pdf{flex:none;width:100%}
+}
+@media(max-width:360px){
+  header{padding:0 0.85rem}
+  .hero h1{font-size:1.45rem}
+}
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <a class="logo" href="#">
+    <div class="logo-mark">
+      <svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    </div>
+    <div class="logo-text">
+      <span class="logo-name">Bulihan Integrated <span>National High School</span></span>
+      <span class="logo-sub">Research Archive</span>
+    </div>
+  </a>
+  <div class="header-right">
+    <div class="sync-pill">
+      <div class="sync-dot loading" id="sync-dot"></div>
+      <span id="sync-label">Syncing…</span>
+    </div>
+    <button class="theme-toggle" id="refresh-btn" title="Force refresh from Drive" aria-label="Refresh library">🔄</button>
+    <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">🌙</button>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-inner">
+    <div class="hero-eyebrow">📂 Live from Google Drive</div>
+    <h1>BINHS <em>Research</em> Archive</h1>
+    <p class="hero-sub">Browse and download completed research papers from SHS students.</p>
+    <div class="search-wrap">
+      <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+      </svg>
+      <input type="search" id="search" placeholder="Search title, author, abstract, section…" autocomplete="off">
+    </div>
+  </div>
+</section>
+
+<!-- FILTER BAR -->
+<div class="filter-bar">
+  <div class="filter-scroll">
+    <div class="filter-group">
+      <span class="filter-label">Strand</span>
+      <div id="strand-chips" style="display:contents"></div>
+    </div>
+    <div class="filter-sep"></div>
+    <div class="filter-group">
+      <span class="filter-label">Grade</span>
+      <div id="grade-chips" style="display:contents"></div>
+    </div>
+    <div class="sort-wrap">
+      <select class="sort-sel" id="sort-sel">
+        <option value="date-desc">Newest first</option>
+        <option value="date-asc">Oldest first</option>
+        <option value="title-asc">Title A–Z</option>
+        <option value="title-desc">Title Z–A</option>
+        <option value="grade">By Grade</option>
+        <option value="strand">By Strand</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<div class="stats-row"><span id="count-label">Loading…</span></div>
+
+<!-- ALERT -->
+<div id="alert-area"></div>
+
+<!-- GRID -->
+<main class="grid-wrap">
+  <div class="grid" id="grid">
+    <div class="state-box"><div class="spinner"></div><p>Loading library…</p></div>
+  </div>
+</main>
+
+<footer>BINHS Research Archive · Powered by GitHub Pages + Google Drive · Auto-syncs from Drive folder</footer>
+
+<!-- DETAIL DRAWER -->
+<div class="drawer-ov" id="drawer-ov">
+  <div class="drawer">
+    <div class="drawer-handle"></div>
+    <div class="drawer-accent-bar" id="d-bar"></div>
+    <button class="drawer-close" id="drawer-close">✕</button>
+    <div class="drawer-body">
+      <div class="drawer-code"    id="d-code"></div>
+      <div class="drawer-title"   id="d-title"></div>
+      <div class="drawer-authors" id="d-authors"></div>
+      <div class="drawer-meta"    id="d-meta"></div>
+      <div class="drawer-info" id="d-info"></div>
+      <div class="drawer-abs-label">Abstract</div>
+      <div class="drawer-abstract" id="d-abstract"></div>
+      <div class="drawer-actions" id="d-actions"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════
+   ⚙️  CONFIGURATION — edit these two values
+   ══════════════════════════════════════════ */
+const DRIVE_FOLDER_ID = '1l30hcRgc14LhlRYyoIP-s_Kh9i5fvU9B';
+const GOOGLE_API_KEY  = 'AIzaSyCMaYFu5oYe2m4sqyCHqEKDbTRNO8uJhVA';
+/* ══════════════════════════════════════════ */
+
+/* ── THEME TOGGLE ── */
+const html = document.documentElement;
+const toggleBtn = document.getElementById('theme-toggle');
+
+// Load saved preference or default to dark
+const savedTheme = localStorage.getItem('bytelib-theme') || 'dark';
+html.setAttribute('data-theme', savedTheme);
+toggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+
+toggleBtn.addEventListener('click', () => {
+  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
+  html.setAttribute('data-theme', next);
+  toggleBtn.textContent = next === 'dark' ? '☀️' : '🌙';
+  localStorage.setItem('bytelib-theme', next);
+});
+
+/* ── STRAND COLORS ── */
+const SC = {
+  STEM:   { bg:'rgba(0,200,140,0.12)',  text:'#00c896', bar:'#00c896' },
+  HUMSS:  { bg:'rgba(139,92,246,0.12)', text:'#a78bfa', bar:'#8b5cf6' },
+  ABM:    { bg:'rgba(34,197,94,0.12)',  text:'#4ade80', bar:'#22c55e' },
+  GAS:    { bg:'rgba(245,158,11,0.12)', text:'#fcd34d', bar:'#f59e0b' },
+  TVL:    { bg:'rgba(249,115,22,0.12)', text:'#fb923c', bar:'#f97316' },
+  SPORTS: { bg:'rgba(239,68,68,0.12)',  text:'#f87171', bar:'#ef4444' },
+  ARTS:   { bg:'rgba(6,182,212,0.12)',  text:'#67e8f9', bar:'#06b6d4' },
+};
+const SC_LIGHT = {
+  STEM:   { bg:'#dcfce7',  text:'#166534', bar:'#00a874' },
+  HUMSS:  { bg:'#ede9fe',  text:'#5b21b6', bar:'#7c3aed' },
+  ABM:    { bg:'#d1fae5',  text:'#065f46', bar:'#059669' },
+  GAS:    { bg:'#fef3c7',  text:'#92400e', bar:'#d97706' },
+  TVL:    { bg:'#ffedd5',  text:'#9a3412', bar:'#ea580c' },
+  SPORTS: { bg:'#fee2e2',  text:'#991b1b', bar:'#dc2626' },
+  ARTS:   { bg:'#cffafe',  text:'#155e75', bar:'#0891b2' },
+};
+function sc(s) {
+  const isDark = html.getAttribute('data-theme') === 'dark';
+  const map = isDark ? SC : SC_LIGHT;
+  return map[(s||'').toUpperCase()] || (isDark
+    ? { bg:'rgba(107,158,138,0.12)', text:'#6b9e8a', bar:'#6b9e8a' }
+    : { bg:'#f0faf6', text:'#3d7a65', bar:'#3d7a65' });
+}
+
+
+/* ── STATE ── */
+let all = [], filtered = [], aStrand = '', aGrade = '';
+const gridEl   = document.getElementById('grid');
+const searchEl = document.getElementById('search');
+const sortEl   = document.getElementById('sort-sel');
+const countEl  = document.getElementById('count-label');
+
+/* ── CACHE CONFIG ── */
+const CACHE_KEY      = 'bytelib-papers-cache';
+const CACHE_TTL_MS   = 30 * 60 * 1000; // 30 minutes
+
+/* ── INIT ── */
+(function init() {
+  const ok = DRIVE_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE' && GOOGLE_API_KEY !== 'YOUR_API_KEY_HERE';
+  if (!ok) {
+    setSyncState('error', 'Not configured');
+    gridEl.innerHTML = `<div class="state-box">
+      <div class="icon">⚙️</div>
+      <h3>Library not configured</h3>
+      <p>Open the HTML file and replace <strong>YOUR_FOLDER_ID_HERE</strong> and <strong>YOUR_API_KEY_HERE</strong> near the top of the &lt;script&gt; tag, then re-upload to GitHub.</p>
+    </div>`;
+    return;
+  }
+  // Try loading from cache first for instant display
+  const cached = loadCache();
+  if (cached) {
+    loadPapers(cached, false);
+    setSyncState('live', `${cached.length} papers (cached)`);
+    // Refresh in background if cache is older than TTL
+    const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
+    if (Date.now() - (meta.ts || 0) > CACHE_TTL_MS) {
+      refreshInBackground();
+    }
+  } else {
+    loadFromDrive();
+  }
+})();
+
+function loadCache() {
+  try {
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch(e) { return null; }
+}
+
+function saveCache(papers) {
+  try {
+    localStorage.setItem(CACHE_KEY, JSON.stringify(papers));
+    localStorage.setItem(CACHE_KEY + '-meta', JSON.stringify({ ts: Date.now(), count: papers.length }));
+  } catch(e) { console.warn('Cache save failed (storage full?)', e); }
+}
+
+function clearCache() {
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_KEY + '-meta');
+}
+
+async function refreshInBackground() {
+  // Silently re-fetch without showing loading state, update if results differ
+  try {
+    const papers = await fetchPapersFromDrive();
+    if (papers && papers.length) {
+      saveCache(papers);
+      setSyncState('live', `${papers.length} papers`);
+      const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
+      const cacheTime = meta.ts ? new Date(meta.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : '';
+      setSyncState('live', `${papers.length} papers · updated ${cacheTime}`);
+      loadPapers(papers, false);
+    }
+  } catch(e) {
+    console.warn('Background refresh failed', e);
+    // Keep showing cached data, show subtle warning
+    const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
+    const cacheTime = meta.ts ? new Date(meta.ts).toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'}) : 'earlier';
+    setSyncState('sample', `Cached · ${cacheTime}`);
+  }
+}
+
+/* ── DRIVE SCAN ── */
+async function fetchPapersFromDrive() {
+  const q = encodeURIComponent(`'${DRIVE_FOLDER_ID}' in parents and trashed=false`);
+  const res = await fetch(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name)&pageSize=1000&key=${GOOGLE_API_KEY}`);
+  if (!res.ok) { const e = await res.json(); throw new Error((e.error && e.error.message) || res.status); }
+  const { files = [] } = await res.json();
+
+  const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
+  const txtMap = {};
+  files.filter(f => f.name.toLowerCase().endsWith('.txt')).forEach(f => { const c = codeOf(f.name); if (c) txtMap[c] = f; });
+
+  const papers = [];
+  for (const pdf of files.filter(f => f.name.toLowerCase().endsWith('.pdf'))) {
+    const code = codeOf(pdf.name);
+    if (!code || !txtMap[code]) continue;
+    try {
+      const r = await fetch(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
+      if (!r.ok) throw new Error(r.status);
+      papers.push({ code, ...parseTxt(await r.text()), pdfId: pdf.id });
+    } catch(e) { console.warn('TXT read failed for', code, e); }
+  }
+  return papers;
+}
+
+async function loadFromDrive() {
+  setSyncState('loading', 'Scanning…');
+  gridEl.innerHTML = '<div class="state-box"><div class="spinner"></div><p>Loading papers from Drive…</p></div>';
+  clearAlert();
+  try {
+    const papers = await fetchPapersFromDrive();
+    if (!papers.length) {
+      setSyncState('error', 'No papers');
+      gridEl.innerHTML = '<div class="state-box"><div class="icon">📂</div><h3>No papers found</h3><p>Make sure the folder contains PDF + TXT pairs with matching <strong>-XXXX</strong> codes and is set to "Anyone with the link can view."</p></div>';
+      return;
+    }
+    saveCache(papers);
+    const cacheTime = new Date().toLocaleTimeString([], {hour:'2-digit',minute:'2-digit'});
+    setSyncState('live', `${papers.length} papers · synced ${cacheTime}`);
+    loadPapers(papers, false);
+  } catch(err) {
+    console.error(err);
+    setSyncState('error', 'Sync failed');
+    // Try serving stale cache if available
+    const stale = loadCache();
+    if (stale && stale.length) {
+      showAlert('⚠️', `Could not refresh: ${err.message}. Showing cached data from last sync.`);
+      loadPapers(stale, false);
+    } else {
+      showAlert('⚠️', `Could not load folder: ${err.message}. Check the Folder ID and API Key in the source code.`);
+      gridEl.innerHTML = '<div class="state-box"><div class="icon">⚠️</div><h3>Could not load library</h3><p>Check your Folder ID and API Key in the source code, and make sure the folder is set to "Anyone with the link can view."</p></div>';
+    }
+  }
+}
+
+/* ── PARSE TXT ── */
+function parseTxt(raw) {
+  const lines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  const o = {}; let abs = [], inAbs = false;
+  for (const ln of lines) {
+    if (inAbs) { abs.push(ln.trimEnd()); continue; }
+    const i = ln.indexOf(':'); if (i < 0) continue;
+    const k = ln.slice(0, i).trim().toLowerCase().replace(/\s+/g, '');
+    const v = ln.slice(i + 1).trim();
+    if (k === 'abstract') { inAbs = true; if (v) abs.push(v); } else o[k] = v;
+  }
+  const abstract = abs.join('\n').trim();
+  return {
+    title:       o.title           || 'Untitled',
+    authors:     o.authors         || o.author || '',
+    date:        o.datepublished   || o.date   || '',
+    grade:       o.grade           || '',
+    strand:      (o.strand         || '').toUpperCase(),
+    section:     o.section         || '',
+    restype:     o.researchtype    || o['research type']  || o.restype   || '',
+    design:      o.formatanddesign || o['format and design'] || o.design || '',
+    subject:     o.subjectarea     || o['subject area']   || o.subject   || '',
+    schoolyear:  o.schoolyear      || o['school year']    || o.sy        || '',
+    adviser:     o.adviser         || o.advisor            || '',
+    award:       o.award           || o['award/recognition'] || o.recognition || '',
+    keywords:    o.keywords        || o.keyword            || '',
+    abstract,
+  };
+}
+
+/* ── LOAD PAPERS ── */
+function loadPapers(papers, isSample) {
+  all = papers; aStrand = ''; aGrade = '';
+  const strands = [...new Set(papers.map(p => p.strand).filter(Boolean))].sort();
+  const grades  = [...new Set(papers.map(p => p.grade).filter(Boolean))].sort();
+  buildChips('strand-chips', strands, () => aStrand, v => { aStrand = v; });
+  buildChips('grade-chips',  grades,  () => aGrade,  v => { aGrade  = v; }, g => 'G' + g);
+  if (isSample && DRIVE_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE') setSyncState('sample', 'Sample data');
+  applyFilters();
+}
+
+function buildChips(id, vals, getV, setV, lbl = v => v) {
+  const wrap = document.getElementById(id);
+  const render = () => {
+    wrap.innerHTML = ['', ...vals].map(v =>
+      `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
+    ).join('');
+    wrap.querySelectorAll('.chip').forEach(b => {
+      b.onclick = () => { setV(b.dataset.v); render(); applyFilters(); };
+    });
+  };
+  render();
+}
+
+/* ── FILTER + SORT ── */
+function applyFilters() {
+  const q = searchEl.value.toLowerCase().trim();
+  filtered = all.filter(p => {
+    const mQ = !q || [p.title, p.authors, p.abstract, p.section, p.code, p.subject, p.restype, p.design, p.keywords, p.adviser, p.award, p.schoolyear].some(f => (f||'').toLowerCase().includes(q));
+    return mQ && (!aStrand || p.strand === aStrand) && (!aGrade || p.grade === aGrade);
+  });
+  sortPapers(); renderCards();
+}
+
+function sortPapers() {
+  const s = sortEl.value;
+  filtered.sort((a, b) => {
+    if (s === 'date-desc')  return (b.date||'').localeCompare(a.date||'');
+    if (s === 'date-asc')   return (a.date||'').localeCompare(b.date||'');
+    if (s === 'title-asc')  return (a.title||'').localeCompare(b.title||'');
+    if (s === 'title-desc') return (b.title||'').localeCompare(a.title||'');
+    if (s === 'grade')      return (a.grade||'').localeCompare(b.grade||'');
+    if (s === 'strand')     return (a.strand||'').localeCompare(b.strand||'');
+    return 0;
+  });
+}
+
+/* ── RENDER CARDS ── */
+function renderCards() {
+  countEl.innerHTML = `Showing <strong>${filtered.length}</strong> of <strong>${all.length}</strong> papers`;
+  if (!filtered.length) {
+    gridEl.innerHTML = '<div class="state-box"><div class="icon">🔍</div><h3>No results</h3><p>Try adjusting your search or filters.</p></div>';
+    return;
+  }
+  gridEl.innerHTML = filtered.map((p, i) => {
+    const c = sc(p.strand);
+    const auths = (p.authors || 'Unknown').split(',').map(a => a.trim()).join(' · ');
+    const ds = p.date ? new Date(p.date).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '';
+    return `
+    <div class="card" style="animation-delay:${Math.min(i * .04, .5)}s" onclick="openDrawer(${i})">
+      <div class="card-accent" style="background:${c.bar}"></div>
+      <div class="card-body">
+        <div class="card-header">
+          <span class="card-code">${x(p.code || '—')}</span>
+          <span class="strand-tag" style="background:${c.bg};color:${c.text}">${x(p.strand || 'GEN')}</span>
+        </div>
+        <div class="card-title">${x(p.title)}</div>
+        <div class="card-authors">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+          ${x(auths)}
+        </div>
+        <div class="card-abstract">${x(p.abstract || 'No abstract available.').replace(/\n/g, '<br>')}</div>
+        <div class="card-tags">
+          ${p.grade      ? `<span class="tag tag-grade">Grade ${x(p.grade)}</span>` : ''}
+          ${p.section    ? `<span class="tag tag-section">${x(p.section)}</span>` : ''}
+          ${p.restype    ? `<span class="tag tag-restype">${x(p.restype)}</span>` : ''}
+          ${p.design     ? `<span class="tag tag-design">${x(p.design)}</span>` : ''}
+          ${p.subject    ? `<span class="tag tag-subject">${x(p.subject)}</span>` : ''}
+          ${p.schoolyear ? `<span class="tag tag-sy">SY ${x(p.schoolyear)}</span>` : ''}
+          ${p.award      ? `<span class="tag tag-award">🏆 ${x(p.award)}</span>` : ''}
+          ${ds           ? `<span class="tag tag-date">${ds}</span>` : ''}
+        </div>
+      </div>
+      <div class="card-footer">
+        <button class="btn-details" onclick="event.stopPropagation();openDrawer(${i})">
+          <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          Details
+        </button>
+        ${p.pdfId !== 'SAMPLE'
+          ? `<a class="btn-dl" href="https://drive.google.com/uc?export=download&id=${p.pdfId}" target="_blank" onclick="event.stopPropagation()">
+               <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+               Download
+             </a>`
+          : `<button class="btn-dl" onclick="event.stopPropagation()">Download</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── DRAWER ── */
+function openDrawer(idx) {
+  const p = filtered[idx];
+  const c = sc(p.strand);
+  const ds = p.date ? new Date(p.date).toLocaleDateString('en-PH', { year:'numeric', month:'long', day:'numeric' }) : 'Unknown';
+  document.getElementById('d-bar').style.background = c.bar;
+  document.getElementById('d-code').textContent = p.code ? `Research Code: ${p.code}` : '';
+  document.getElementById('d-title').textContent = p.title || 'Untitled';
+  document.getElementById('d-abstract').innerHTML = x(p.abstract || 'No abstract available.').replace(/\n/g, '<br>');
+  document.getElementById('d-authors').innerHTML = `
+    <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="flex-shrink:0;margin-top:2px">
+      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+    </svg>
+    <div><strong>Authors:</strong> ${x(p.authors || 'Unknown')}</div>`;
+  // Top meta tags row
+  document.getElementById('d-meta').innerHTML = [
+    p.strand     ? `<span class="tag" style="background:${c.bg};color:${c.text};border-color:${c.bg}">${x(p.strand)}</span>` : '',
+    p.grade      ? `<span class="tag tag-grade">Grade ${x(p.grade)}</span>` : '',
+    p.section    ? `<span class="tag tag-section">Section ${x(p.section)}</span>` : '',
+    p.schoolyear ? `<span class="tag tag-sy">SY ${x(p.schoolyear)}</span>` : '',
+    p.award      ? `<span class="tag tag-award">🏆 ${x(p.award)}</span>` : '',
+    `<span class="tag tag-date">${ds}</span>`,
+  ].join('');
+
+  // Structured info grid
+  const kwHtml = p.keywords
+    ? p.keywords.split(',').map(k => `<span class="kw-pill">${x(k.trim())}</span>`).join('')
+    : '';
+  document.getElementById('d-info').innerHTML = [
+    p.restype    ? `<div class="drawer-info-item"><span class="drawer-info-label">Research Type</span><span class="drawer-info-value">${x(p.restype)}</span></div>` : '',
+    p.design     ? `<div class="drawer-info-item"><span class="drawer-info-label">Format & Design</span><span class="drawer-info-value">${x(p.design)}</span></div>` : '',
+    p.subject    ? `<div class="drawer-info-item"><span class="drawer-info-label">Subject Area</span><span class="drawer-info-value">${x(p.subject)}</span></div>` : '',
+    p.adviser    ? `<div class="drawer-info-item"><span class="drawer-info-label">Adviser</span><span class="drawer-info-value">${x(p.adviser)}</span></div>` : '',
+    kwHtml       ? `<div class="drawer-info-item drawer-info-full"><span class="drawer-info-label">Keywords</span><span class="drawer-info-value keywords">${kwHtml}</span></div>` : '',
+  ].filter(Boolean).join('');
+  document.getElementById('d-actions').innerHTML = p.pdfId !== 'SAMPLE' ? `
+    <a class="btn-read-pdf" href="https://drive.google.com/file/d/${p.pdfId}/preview" target="_blank">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      Read PDF
+    </a>
+    <a class="btn-dl-pdf" href="https://drive.google.com/uc?export=download&id=${p.pdfId}" target="_blank">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Download PDF
+    </a>` : `<button class="btn-read-pdf">Sample — no PDF linked</button>`;
+  document.getElementById('drawer-ov').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+document.getElementById('drawer-close').onclick = closeDrawer;
+document.getElementById('drawer-ov').onclick = e => { if (e.target === document.getElementById('drawer-ov')) closeDrawer(); };
+function closeDrawer() { document.getElementById('drawer-ov').classList.remove('open'); document.body.style.overflow = ''; }
+
+/* ── FORCE REFRESH BUTTON ── */
+document.getElementById('refresh-btn').addEventListener('click', () => {
+  clearCache();
+  loadFromDrive();
+});
+
+/* ── RE-RENDER ON THEME CHANGE (for strand colors) ── */
+toggleBtn.addEventListener('click', () => { if (filtered.length) renderCards(); });
+
+/* ── EVENTS ── */
+searchEl.addEventListener('input', applyFilters);
+sortEl.addEventListener('change', () => { sortPapers(); renderCards(); });
+
+/* ── HELPERS ── */
+function setSyncState(s, l) {
+  const d = document.getElementById('sync-dot');
+  d.className = 'sync-dot' + (s === 'loading' ? ' loading' : s === 'error' ? ' error' : s === 'sample' ? ' sample' : '');
+  document.getElementById('sync-label').textContent = l;
+}
+function showAlert(icon, msg) {
+  document.getElementById('alert-area').innerHTML = `<div class="alert"><span class="alert-icon">${icon}</span><span>${msg}</span><button class="alert-close" onclick="clearAlert()">✕</button></div>`;
+}
+function clearAlert() { document.getElementById('alert-area').innerHTML = ''; }
+function x(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+</script>
+</body>
+</html>
