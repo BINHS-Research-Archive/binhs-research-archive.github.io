@@ -608,6 +608,105 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
   header{padding:0 0.85rem}
   .hero h1{font-size:1.45rem}
 }
+
+/* ══════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════ */
+.settings-ov{position:fixed;inset:0;z-index:600;background:rgba(0,0,0,0.55);backdrop-filter:blur(4px);display:none;align-items:flex-end;justify-content:center}
+.settings-ov.open{display:flex}
+@media(min-width:540px){.settings-ov{align-items:center}}
+.settings-panel{
+  background:var(--surface);border:1.5px solid var(--border2);
+  width:100%;max-width:480px;border-radius:20px 20px 0 0;
+  max-height:90vh;overflow-y:auto;animation:slideUp .28s ease;
+  transition:background .25s,border-color .25s;
+}
+@media(min-width:540px){.settings-panel{border-radius:16px;max-height:85vh}}
+.settings-handle{width:38px;height:4px;background:var(--border2);border-radius:2px;margin:.8rem auto 0}
+.settings-head{display:flex;align-items:center;justify-content:space-between;padding:1rem 1.25rem .5rem}
+.settings-head h2{font-size:.95rem;font-weight:700;color:var(--text);font-family:'Playfair Display',serif}
+.settings-close{background:var(--surface2);border:1.5px solid var(--border);border-radius:8px;width:32px;height:32px;display:grid;place-items:center;font-size:.9rem;color:var(--muted);cursor:pointer;transition:color .15s,border-color .15s}
+.settings-close:hover{color:var(--text);border-color:var(--accent)}
+.settings-body{padding:.25rem 1.25rem 1.5rem;display:flex;flex-direction:column;gap:.2rem}
+.settings-section{font-size:.62rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--accent);margin:1rem 0 .4rem}
+.setting-row{display:flex;align-items:center;justify-content:space-between;padding:.6rem 0;border-bottom:1px solid var(--border);gap:1rem}
+.setting-row:last-child{border-bottom:none}
+.setting-label{display:flex;flex-direction:column;gap:.15rem}
+.setting-label span{font-size:.82rem;font-weight:600;color:var(--text)}
+.setting-label small{font-size:.68rem;color:var(--muted2);line-height:1.4}
+/* Toggle switch */
+.sw{position:relative;width:40px;height:22px;flex-shrink:0}
+.sw input{opacity:0;width:0;height:0;position:absolute}
+.sw-track{position:absolute;inset:0;background:var(--border2);border-radius:11px;cursor:pointer;transition:background .2s}
+.sw input:checked + .sw-track{background:var(--accent)}
+.sw-track::after{content:'';position:absolute;width:16px;height:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s}
+.sw input:checked + .sw-track::after{transform:translateX(18px)}
+/* Select */
+.setting-select{padding:.3rem 1.8rem .3rem .65rem;border:1.5px solid var(--border2);border-radius:8px;font-size:.72rem;font-weight:600;color:var(--text2);background:var(--surface);cursor:pointer;outline:none;appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b9e8a'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 8px center;transition:border-color .15s}
+.setting-select:hover{border-color:var(--accent)}
+.setting-select option{background:var(--surface);color:var(--text)}
+/* Reset button */
+.settings-reset{width:100%;margin-top:1rem;padding:.55rem;background:transparent;border:1.5px solid var(--border2);border-radius:9px;font-size:.75rem;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s}
+.settings-reset:hover{border-color:#ef4444;color:#ef4444}
+
+/* ══════════════════════════════════════════
+   COMPACT CARD MODE
+══════════════════════════════════════════ */
+.grid.compact .card-abstract{-webkit-line-clamp:2}
+.grid.compact .card-body{gap:.4rem;padding:.85rem}
+.grid.compact .card-tags{display:none}
+.grid.compact{grid-template-columns:repeat(auto-fill,minmax(min(100%,260px),1fr));gap:.65rem}
+
+/* ══════════════════════════════════════════
+   FILTER DROPDOWN (when >3 items)
+══════════════════════════════════════════ */
+.filter-dropdown{position:relative;flex-shrink:0}
+.filter-dropdown-btn{
+  display:flex;align-items:center;gap:.35rem;
+  padding:.28rem .78rem;background:transparent;
+  border:1.5px solid var(--border2);border-radius:20px;
+  font-size:.71rem;font-weight:600;color:var(--muted);
+  cursor:pointer;white-space:nowrap;transition:all .15s;
+}
+.filter-dropdown-btn:hover,.filter-dropdown-btn.has-active{border-color:var(--accent);color:var(--accent)}
+.filter-dropdown-btn.has-active{background:var(--accent-lt)}
+.filter-dropdown-btn svg{transition:transform .2s}
+.filter-dropdown-btn.open svg{transform:rotate(180deg)}
+.filter-dropdown-menu{
+  position:absolute;top:calc(100% + 6px);left:0;z-index:400;
+  background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:12px;min-width:160px;max-height:260px;overflow-y:auto;
+  box-shadow:var(--shadow-md);animation:fadeUp .15s ease;
+  padding:.4rem;
+}
+.filter-dropdown-menu .chip{display:block;width:100%;text-align:left;border-radius:8px;border:none;margin-bottom:.2rem}
+.filter-dropdown-menu .chip:last-child{margin-bottom:0}
+.filter-dropdown-menu .chip:hover{background:var(--accent-lt)}
+.filter-dropdown-menu .chip.active{background:var(--accent);color:#fff}
+[data-theme="dark"] .filter-dropdown-menu .chip.active{color:#0a0f0d}
+
+/* ══════════════════════════════════════════
+   PROGRESS BAR
+══════════════════════════════════════════ */
+.progress-bar-wrap{height:2px;background:var(--border);position:relative;overflow:hidden}
+.progress-bar{height:100%;background:var(--accent);width:0%;transition:width .3s ease;box-shadow:0 0 8px var(--accent-glow)}
+
+/* ══════════════════════════════════════════
+   TOAST NOTIFICATION
+══════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:1.5rem;left:50%;transform:translateX(-50%) translateY(0);
+  background:var(--surface);border:1.5px solid var(--border2);
+  border-radius:10px;padding:.6rem 1.1rem;
+  font-size:.78rem;font-weight:600;color:var(--text);
+  box-shadow:var(--shadow-md);z-index:700;
+  display:flex;align-items:center;gap:.5rem;
+  animation:toastIn .25s ease;white-space:nowrap;
+}
+.toast.hiding{animation:toastOut .25s ease forwards}
+@keyframes toastIn{from{opacity:0;transform:translateX(-50%) translateY(12px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+@keyframes toastOut{from{opacity:1;transform:translateX(-50%) translateY(0)}to{opacity:0;transform:translateX(-50%) translateY(12px)}}
+
 </style>
 </head>
 <body>
@@ -629,6 +728,7 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
       <span id="sync-label">Syncing…</span>
     </div>
     <button class="theme-toggle" id="refresh-btn" title="Force refresh from Drive" aria-label="Refresh library">🔄</button>
+    <button class="theme-toggle" id="settings-btn" title="Settings" aria-label="Settings">⚙️</button>
     <button class="theme-toggle" id="theme-toggle" title="Toggle dark/light mode" aria-label="Toggle theme">🌙</button>
   </div>
 </header>
@@ -678,6 +778,8 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
   </div>
 </div>
 
+<!-- PROGRESS -->
+<div class="progress-bar-wrap"><div class="progress-bar" id="progress-bar"></div></div>
 <!-- STATS -->
 <div class="stats-row"><span id="count-label">Loading…</span></div>
 
@@ -775,6 +877,88 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
   </div>
 </div>
 
+<!-- SETTINGS PANEL -->
+<div class="settings-ov" id="settings-ov">
+  <div class="settings-panel">
+    <div class="settings-handle"></div>
+    <div class="settings-head">
+      <h2>⚙️ Settings</h2>
+      <button class="settings-close" id="settings-close">✕</button>
+    </div>
+    <div class="settings-body">
+
+      <div class="settings-section">Appearance</div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Dark Mode</span>
+          <small>Switch between dark and light theme</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="sw-dark"><span class="sw-track"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Compact Cards</span>
+          <small>Smaller cards, more visible at once</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="sw-compact"><span class="sw-track"></span></label>
+      </div>
+
+      <div class="settings-section">Performance</div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Cache Duration</span>
+          <small>How long to store papers locally before re-syncing</small>
+        </div>
+        <select class="setting-select" id="sel-cache-ttl">
+          <option value="900000">15 minutes</option>
+          <option value="1800000" selected>30 minutes</option>
+          <option value="3600000">1 hour</option>
+          <option value="86400000">1 day</option>
+        </select>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Fetch Concurrency</span>
+          <small>Parallel requests when scanning Drive (lower = safer on slow connections)</small>
+        </div>
+        <select class="setting-select" id="sel-concurrency">
+          <option value="3">3 (slow)</option>
+          <option value="5" selected>5 (balanced)</option>
+          <option value="8">8 (fast)</option>
+          <option value="12">12 (max)</option>
+        </select>
+      </div>
+
+      <div class="settings-section">Accessibility</div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Keyboard Shortcuts</span>
+          <small>/ to search · Esc to close · ? to open settings</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="sw-keys" checked><span class="sw-track"></span></label>
+      </div>
+
+      <div class="setting-row">
+        <div class="setting-label">
+          <span>Reduced Motion</span>
+          <small>Disable card animations and transitions</small>
+        </div>
+        <label class="sw"><input type="checkbox" id="sw-motion"><span class="sw-track"></span></label>
+      </div>
+
+      <button class="settings-reset" id="settings-reset">Reset all settings to defaults</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="toast-container"></div>
+
 <script>
 /* ══════════════════════════════════════════
    ⚙️  CONFIGURATION — edit these two values
@@ -783,20 +967,80 @@ const DRIVE_FOLDER_ID = '1I83cCCtw7TrjPoHt0Vzj_oiiMYhUqFEz';
 const GOOGLE_API_KEY  = 'AIzaSyBtDIpY9BtR9yeciW2s3d-ss8dsv-Qe-lc';
 /* ══════════════════════════════════════════ */
 
-/* ── THEME TOGGLE ── */
+/* ══════════════════════════════════════════
+   🍪 COOKIE HELPERS
+══════════════════════════════════════════ */
+function setCookie(name, value, days = 365) {
+  const d = new Date();
+  d.setTime(d.getTime() + days * 86400000);
+  document.cookie = `${name}=${encodeURIComponent(value)};expires=${d.toUTCString()};path=/;SameSite=Lax`;
+}
+function getCookie(name) {
+  const match = document.cookie.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return match ? decodeURIComponent(match[1]) : null;
+}
+function deleteCookie(name) {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 UTC;path=/`;
+}
+
+/* ══════════════════════════════════════════
+   ⚙️  SETTINGS — loaded from cookies
+══════════════════════════════════════════ */
+const SETTING_DEFAULTS = {
+  theme:       'dark',
+  compact:     false,
+  cacheTtl:    1800000,   // 30 min
+  concurrency: 5,
+  keysEnabled: true,
+  noMotion:    false,
+};
+
+function loadSettings() {
+  return {
+    theme:       getCookie('binhs_theme')       || SETTING_DEFAULTS.theme,
+    compact:     getCookie('binhs_compact')     === 'true',
+    cacheTtl:    parseInt(getCookie('binhs_cache_ttl'))    || SETTING_DEFAULTS.cacheTtl,
+    concurrency: parseInt(getCookie('binhs_concurrency'))  || SETTING_DEFAULTS.concurrency,
+    keysEnabled: getCookie('binhs_keys') !== 'false',
+    noMotion:    getCookie('binhs_no_motion')   === 'true',
+  };
+}
+
+function saveSettings(s) {
+  setCookie('binhs_theme',      s.theme);
+  setCookie('binhs_compact',    s.compact);
+  setCookie('binhs_cache_ttl',  s.cacheTtl);
+  setCookie('binhs_concurrency',s.concurrency);
+  setCookie('binhs_keys',       s.keysEnabled);
+  setCookie('binhs_no_motion',  s.noMotion);
+}
+
+function resetSettings() {
+  ['binhs_theme','binhs_compact','binhs_cache_ttl','binhs_concurrency','binhs_keys','binhs_no_motion']
+    .forEach(deleteCookie);
+  return { ...SETTING_DEFAULTS };
+}
+
+let S = loadSettings(); // global settings object
+
+/* ── THEME ── */
 const html = document.documentElement;
 const toggleBtn = document.getElementById('theme-toggle');
 
-// Load saved preference or default to dark
-const savedTheme = localStorage.getItem('bytelib-theme') || 'dark';
-html.setAttribute('data-theme', savedTheme);
-toggleBtn.textContent = savedTheme === 'dark' ? '☀️' : '🌙';
+function applyTheme(theme) {
+  html.setAttribute('data-theme', theme);
+  toggleBtn.textContent = theme === 'dark' ? '☀️' : '🌙';
+  const sw = document.getElementById('sw-dark');
+  if (sw) sw.checked = theme === 'dark';
+}
+applyTheme(S.theme);
 
 toggleBtn.addEventListener('click', () => {
-  const next = html.getAttribute('data-theme') === 'dark' ? 'light' : 'dark';
-  html.setAttribute('data-theme', next);
-  toggleBtn.textContent = next === 'dark' ? '☀️' : '🌙';
-  localStorage.setItem('bytelib-theme', next);
+  S.theme = S.theme === 'dark' ? 'light' : 'dark';
+  applyTheme(S.theme);
+  saveSettings(S);
+  Object.keys(_scCache).forEach(k => delete _scCache[k]);
+  if (filtered.length) renderCards();
 });
 
 /* ── STRAND COLORS — dynamic, works for any strand name ── */
@@ -862,8 +1106,9 @@ const sortEl   = document.getElementById('sort-sel');
 const countEl  = document.getElementById('count-label');
 
 /* ── CACHE CONFIG ── */
-const CACHE_KEY      = 'bytelib-papers-cache';
-const CACHE_TTL_MS   = 30 * 60 * 1000; // 30 minutes
+const CACHE_KEY    = 'bytelib-papers-cache';
+const CACHE_VER    = 'v3'; // bump this to invalidate all caches on format change
+function getCacheTTL() { return S.cacheTtl; }
 
 /* ── INIT ── */
 (function init() {
@@ -890,12 +1135,13 @@ const CACHE_TTL_MS   = 30 * 60 * 1000; // 30 minutes
     loadPapers(cached, false);
     const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
     const age  = Date.now() - (meta.ts || 0);
+    if (meta.ver !== CACHE_VER) { clearCache(); loadFromDrive(); return; }
     const cacheTime = meta.ts
       ? new Date(meta.ts).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
       : '';
     setSyncState('live', `${cached.length} papers · cached ${cacheTime}`);
     // Only background-refresh if cache is stale
-    if (age > CACHE_TTL_MS) refreshInBackground();
+    if (age > getCacheTTL()) refreshInBackground();
   } else {
     loadFromDrive();
   }
@@ -912,7 +1158,7 @@ function loadCache() {
 function saveCache(papers) {
   try {
     localStorage.setItem(CACHE_KEY, JSON.stringify(papers));
-    localStorage.setItem(CACHE_KEY + '-meta', JSON.stringify({ ts: Date.now(), count: papers.length }));
+    localStorage.setItem(CACHE_KEY + '-meta', JSON.stringify({ ts: Date.now(), count: papers.length, ver: CACHE_VER }));
   } catch(e) { console.warn('Cache save failed (storage full?)', e); }
 }
 
@@ -956,7 +1202,22 @@ async function driveList(folderId) {
   return files;
 }
 
-// Extract papers from a pre-fetched file list (no extra API call)
+// Concurrency-limited pool runner
+async function poolMap(items, fn, limit) {
+  const results = [];
+  let idx = 0;
+  async function worker() {
+    while (idx < items.length) {
+      const i = idx++;
+      try { results[i] = await fn(items[i], i); }
+      catch(e) { results[i] = null; }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
+  return results.filter(Boolean);
+}
+
+// Extract papers from a pre-fetched file list using concurrency pool
 async function extractPapers(files, strandName, schoolYear) {
   const txtMap = {};
   files.filter(f => f.name.toLowerCase().endsWith('.txt'))
@@ -964,78 +1225,67 @@ async function extractPapers(files, strandName, schoolYear) {
 
   const pdfs = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
 
-  // Fetch all TXT files in parallel
-  const results = await Promise.allSettled(
-    pdfs.map(async pdf => {
-      const code = codeOf(pdf.name);
-      if (!code || !txtMap[code]) return null;
-      const r = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
-      if (!r.ok) throw new Error(`TXT fetch failed for ${code}: ${r.status}`);
-      const parsed = parseTxt(await r.text());
-      return {
-        code,
-        ...parsed,
-        strand:     strandName || parsed.strand,
-        schoolyear: schoolYear || parsed.schoolyear,
-        pdfId: pdf.id,
-      };
-    })
-  );
-
-  return results
-    .filter(r => r.status === 'fulfilled' && r.value)
-    .map(r => r.value);
+  return poolMap(pdfs, async pdf => {
+    const code = codeOf(pdf.name);
+    if (!code || !txtMap[code]) return null;
+    const r = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
+    if (!r.ok) throw new Error(`TXT fetch failed for ${code}: ${r.status}`);
+    const parsed = parseTxt(await r.text());
+    return {
+      code, ...parsed,
+      strand:     strandName || parsed.strand,
+      schoolyear: schoolYear || parsed.schoolyear,
+      pdfId: pdf.id,
+    };
+  }, S.concurrency);
 }
 
 async function fetchPapersFromDrive() {
-  // Step 1: list root folder
+  setProgress(5);
+  setSyncState('loading', 'Scanning folders…');
+
+  // Step 1: root folder
   const rootItems = await driveList(DRIVE_FOLDER_ID);
   const strandFolders = rootItems.filter(f => f.mimeType === FOLDER_MIME);
+  setProgress(15);
 
   // Step 2: list all strand folders in parallel
   const strandContents = await Promise.all(
     strandFolders.map(async sf => ({
-      name: sf.name.toUpperCase(),
-      id:   sf.id,
+      name: sf.name.toUpperCase(), id: sf.id,
       items: await driveList(sf.id),
     }))
   );
+  setProgress(30);
+  setSyncState('loading', `Found ${strandFolders.length} strand${strandFolders.length !== 1 ? 's' : ''}…`);
 
-  // Step 3: list all year folders in parallel (across all strands at once)
+  // Step 3: list all year folders in parallel
   const yearFetchJobs = [];
   for (const strand of strandContents) {
-    const yearFolders = strand.items.filter(f => f.mimeType === FOLDER_MIME);
-    for (const yf of yearFolders) {
+    for (const yf of strand.items.filter(f => f.mimeType === FOLDER_MIME)) {
       yearFetchJobs.push({ strandName: strand.name, yearName: yf.name, id: yf.id });
     }
   }
   const yearContents = await Promise.all(
-    yearFetchJobs.map(async job => ({
-      ...job,
-      items: await driveList(job.id),
-    }))
+    yearFetchJobs.map(async job => ({ ...job, items: await driveList(job.id) }))
   );
+  setProgress(50);
+  setSyncState('loading', `Scanning ${yearFetchJobs.length} year folder${yearFetchJobs.length !== 1 ? 's' : ''}…`);
 
-  // Step 4: extract papers from all year folders + loose files — all in parallel
+  // Step 4: extract papers from all folders in parallel
   const allExtractions = [];
-
-  // Loose files in root
   allExtractions.push(extractPapers(rootItems, '', ''));
-
-  // Loose files directly inside each strand folder (no year subfolder)
   for (const strand of strandContents) {
-    const looseFiles = strand.items.filter(f => f.mimeType !== FOLDER_MIME);
-    if (looseFiles.length) {
-      allExtractions.push(extractPapers(looseFiles, strand.name, ''));
-    }
+    const loose = strand.items.filter(f => f.mimeType !== FOLDER_MIME);
+    if (loose.length) allExtractions.push(extractPapers(loose, strand.name, ''));
   }
-
-  // Files inside year folders
   for (const yc of yearContents) {
     allExtractions.push(extractPapers(yc.items, yc.strandName, yc.yearName));
   }
 
+  setSyncState('loading', 'Loading paper metadata…');
   const paperGroups = await Promise.all(allExtractions);
+  setProgress(95);
   return paperGroups.flat();
 }
 
@@ -1052,6 +1302,7 @@ async function loadFromDrive() {
     }
     saveCache(papers);
     const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
+    setProgress(100);
     setSyncState('live', `${papers.length} papers · synced ${now}`);
     loadPapers(papers, false);
   } catch(err) {
@@ -1108,9 +1359,9 @@ function loadPapers(papers, isSample) {
   const strands = [...new Set(papers.map(p => p.strand).filter(Boolean))].sort();
   const grades  = [...new Set(papers.map(p => p.grade).filter(Boolean))].sort();
   const years   = [...new Set(papers.map(p => p.schoolyear).filter(Boolean))].sort();
-  buildChips('strand-chips', strands, () => aStrand, v => { aStrand = v; });
-  buildChips('grade-chips',  grades,  () => aGrade,  v => { aGrade  = v; }, g => 'G' + g);
-  buildChips('year-chips',   years,   () => aYear,   v => { aYear   = v; });
+  buildChipsOrDropdown('strand-chips', strands, () => aStrand, v => { aStrand = v; });
+  buildChipsOrDropdown('grade-chips',  grades,  () => aGrade,  v => { aGrade  = v; }, g => 'G' + g);
+  buildChipsOrDropdown('year-chips',   years,   () => aYear,   v => { aYear   = v; });
   // Show/hide year filter group depending on whether any years exist
   document.getElementById('year-filter-group').style.display = years.length ? '' : 'none';
   document.getElementById('year-filter-sep').style.display   = years.length ? '' : 'none';
@@ -1241,7 +1492,9 @@ function openDrawer(idx) {
     p.adviser    ? `<div class="drawer-info-item"><span class="drawer-info-label">Adviser</span><span class="drawer-info-value">${x(p.adviser)}</span></div>` : '',
     kwHtml       ? `<div class="drawer-info-item drawer-info-full"><span class="drawer-info-label">Keywords</span><span class="drawer-info-value keywords">${kwHtml}</span></div>` : '',
   ].filter(Boolean).join('');
-  document.getElementById('d-actions').innerHTML = p.pdfId !== 'SAMPLE' ? `
+  const shareUrl = `${location.origin}${location.pathname}?code=${encodeURIComponent(p.code||'')}`;
+  const citation = `${p.authors || 'Unknown'} (${p.date ? new Date(p.date).getFullYear() : 'n.d.'}). ${p.title || 'Untitled'}. Bulihan Integrated National High School.`;
+  document.getElementById('d-actions').innerHTML = (p.pdfId !== 'SAMPLE' ? `
     <a class="btn-read-pdf" href="https://drive.google.com/file/d/${p.pdfId}/preview" target="_blank">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
       Read PDF
@@ -1249,7 +1502,15 @@ function openDrawer(idx) {
     <a class="btn-dl-pdf" href="https://drive.google.com/uc?export=download&id=${p.pdfId}" target="_blank">
       <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Download PDF
-    </a>` : `<button class="btn-read-pdf">Sample — no PDF linked</button>`;
+    </a>` : `<button class="btn-read-pdf" style="cursor:not-allowed;opacity:.6">No PDF linked</button>`) + `
+    <button class="btn-dl-pdf" onclick="copyCitation('${encodeURIComponent(citation)}')" style="flex:0;padding:.5rem .9rem" title="Copy citation">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+      Cite
+    </button>
+    <button class="btn-dl-pdf" onclick="shareLink('${encodeURIComponent(shareUrl)}')" style="flex:0;padding:.5rem .9rem" title="Share link">
+      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+      Share
+    </button>`;
   document.getElementById('drawer-ov').classList.add('open');
   document.body.style.overflow = 'hidden';
 }
@@ -1272,28 +1533,28 @@ toggleBtn.addEventListener('click', () => {
 });
 
 /* ── EVENTS ── */
-searchEl.addEventListener('input', applyFilters);
+/* search is handled by debounced listener above */
 sortEl.addEventListener('change', () => { sortPapers(); renderCards(); });
 
 /* ── SPLASH TEXT ── */
 const DEFAULT_SPLASHES = [
   "Also try reading the abstract!",
   "Research is formalized curiosity!",
-  "Knowledge is experience!",
+  "Made with AI for Humans",
   "That's not a bug, it's a feature!",
   "Powered by Google Drive!",
-  "No backend required!",
+  "Inside Jokes are Allowed",
   "S.Y 25-26 edition!",
   "Loading at the speed of knowledge!",
   "Have you cited your sources?",
-  "Peer-reviewed by actual peers!",
-  "100% student-made research!",
+  "Is the RRL for free?",
+  "The Prototype ain't worky",
   "Now with dark mode!",
   "Also try STEM!",
   "BINHS represents!",
-  "Built with Vanilla JS!",
+  "Join BYTE, don't let the flame die out",
   "Caffeine not included.",
-  "Try searching by keyword!",
+  "Press Alt + F4 for a suprize",
   "Press the refresh button to sync!",
   "Bulihan's finest research, online!",
   "Don't forget to cite your sources!",
@@ -1344,7 +1605,7 @@ async function loadSchoolLogo(rootFolderId) {
       if (!res.ok) continue;
       const { files = [] } = await res.json();
       if (!files.length) continue;
-      const url = `https://drive.google.com/thumbnail?id=${files[0].id}&sz=w128`;
+      const url = `https://lh3.googleusercontent.com/d/${files[0].id}=w200`;
       // Header logo
       const mark = document.querySelector('.logo-mark');
       if (mark) {
@@ -1365,6 +1626,277 @@ async function loadSchoolLogo(rootFolderId) {
 /* ── FOOTER YEAR ── */
 document.getElementById('footer-year').textContent = new Date().getFullYear();
 
+/* ── PROGRESS BAR ── */
+function setProgress(pct) {
+  const bar = document.getElementById('progress-bar');
+  if (!bar) return;
+  bar.style.width = pct + '%';
+  if (pct >= 100) setTimeout(() => { bar.style.width = '0%'; }, 600);
+}
+
+/* ── TOAST ── */
+let toastTimer;
+function showToast(msg, icon = '✅', duration = 2500) {
+  const container = document.getElementById('toast-container');
+  const existing = container.querySelector('.toast');
+  if (existing) existing.remove();
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span>${icon}</span><span>${msg}</span>`;
+  container.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => {
+    el.classList.add('hiding');
+    setTimeout(() => el.remove(), 260);
+  }, duration);
+}
+
+/* ── CITATION + SHARE ── */
+function copyCitation(encoded) {
+  const text = decodeURIComponent(encoded);
+  navigator.clipboard.writeText(text)
+    .then(() => showToast('Citation copied!', '📋'))
+    .catch(() => showToast('Copy failed — try manually', '⚠️'));
+}
+function shareLink(encoded) {
+  const url = decodeURIComponent(encoded);
+  if (navigator.share) {
+    navigator.share({ title: 'BINHS Research Paper', url })
+      .catch(() => {});
+  } else {
+    navigator.clipboard.writeText(url)
+      .then(() => showToast('Link copied!', '🔗'))
+      .catch(() => showToast('Copy failed', '⚠️'));
+  }
+}
+
+/* ── SHARE LINK — open paper directly from URL ── */
+function checkShareLink() {
+  const params = new URLSearchParams(location.search);
+  const code = params.get('code');
+  if (!code) return;
+  // Wait for papers to load, then open matching drawer
+  const tryOpen = () => {
+    const idx = filtered.findIndex(p => p.code === code);
+    if (idx >= 0) { openDrawer(idx); return; }
+    const allIdx = all.findIndex(p => p.code === code);
+    if (allIdx >= 0) {
+      // Paper exists but filtered out — reset filters and try again
+      aStrand = ''; aGrade = ''; aYear = '';
+      searchEl.value = '';
+      applyFilters();
+      const newIdx = filtered.findIndex(p => p.code === code);
+      if (newIdx >= 0) openDrawer(newIdx);
+    }
+  };
+  if (all.length) tryOpen();
+  else {
+    const orig = loadPapers;
+    const unsub = setInterval(() => { if (all.length) { clearInterval(unsub); tryOpen(); } }, 200);
+  }
+}
+
+/* ── DEBOUNCED SEARCH ── */
+let searchDebounce;
+searchEl.removeEventListener('input', applyFilters); // remove the direct one set earlier
+searchEl.addEventListener('input', () => {
+  clearTimeout(searchDebounce);
+  searchDebounce = setTimeout(applyFilters, 150);
+});
+
+/* ── SCROLL POSITION MEMORY ── */
+let savedScrollY = 0;
+function saveScrollPos() { savedScrollY = window.scrollY; }
+function restoreScrollPos() {
+  requestAnimationFrame(() => window.scrollTo({ top: savedScrollY, behavior: 'instant' }));
+}
+// Patch openDrawer to save scroll and closeDrawer to restore
+const _origOpen = openDrawer;
+window.openDrawer = function(idx) { saveScrollPos(); _origOpen(idx); };
+const _origClose = closeDrawer;
+window.closeDrawer = function() { _origClose(); restoreScrollPos(); };
+
+/* ── BACK BUTTON CLOSES DRAWER ── */
+window.addEventListener('popstate', () => {
+  if (document.getElementById('settings-ov').classList.contains('open')) {
+    closeSettings();
+    return;
+  }
+  if (document.getElementById('drawer-ov').classList.contains('open')) {
+    closeDrawer();
+  }
+});
+const _origOpenDrawer = window.openDrawer;
+window.openDrawer = function(idx) {
+  history.pushState({ drawer: true }, '');
+  _origOpenDrawer(idx);
+};
+
+/* ── KEYBOARD SHORTCUTS ── */
+document.addEventListener('keydown', e => {
+  if (!S.keysEnabled) return;
+  const tag = document.activeElement.tagName;
+  const drawerOpen = document.getElementById('drawer-ov').classList.contains('open');
+  const settingsOpen = document.getElementById('settings-ov').classList.contains('open');
+  if (e.key === 'Escape') {
+    if (drawerOpen) { history.back(); return; }
+    if (settingsOpen) { closeSettings(); return; }
+  }
+  if (e.key === '/' && tag !== 'INPUT' && tag !== 'TEXTAREA' && !drawerOpen) {
+    e.preventDefault();
+    searchEl.focus();
+    searchEl.select();
+  }
+  if (e.key === '?' && tag !== 'INPUT' && tag !== 'TEXTAREA' && !drawerOpen) {
+    e.preventDefault();
+    openSettings();
+  }
+});
+
+/* ── SETTINGS PANEL ── */
+function openSettings() {
+  syncSettingsUI();
+  history.pushState({ settings: true }, '');
+  document.getElementById('settings-ov').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeSettings() {
+  document.getElementById('settings-ov').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function syncSettingsUI() {
+  document.getElementById('sw-dark').checked    = S.theme === 'dark';
+  document.getElementById('sw-compact').checked = S.compact;
+  document.getElementById('sw-keys').checked    = S.keysEnabled;
+  document.getElementById('sw-motion').checked  = S.noMotion;
+  document.getElementById('sel-cache-ttl').value   = S.cacheTtl;
+  document.getElementById('sel-concurrency').value = S.concurrency;
+}
+
+function applyCompact(val) {
+  document.getElementById('grid').classList.toggle('compact', val);
+}
+function applyMotion(val) {
+  document.body.classList.toggle('no-motion', val);
+}
+
+// Wire up settings controls
+document.getElementById('settings-btn').addEventListener('click', openSettings);
+document.getElementById('settings-close').addEventListener('click', closeSettings);
+document.getElementById('settings-ov').addEventListener('click', e => {
+  if (e.target === document.getElementById('settings-ov')) closeSettings();
+});
+
+document.getElementById('sw-dark').addEventListener('change', e => {
+  S.theme = e.target.checked ? 'dark' : 'light';
+  applyTheme(S.theme);
+  saveSettings(S);
+  Object.keys(_scCache).forEach(k => delete _scCache[k]);
+  if (filtered.length) renderCards();
+});
+document.getElementById('sw-compact').addEventListener('change', e => {
+  S.compact = e.target.checked;
+  applyCompact(S.compact);
+  saveSettings(S);
+});
+document.getElementById('sw-keys').addEventListener('change', e => {
+  S.keysEnabled = e.target.checked;
+  saveSettings(S);
+});
+document.getElementById('sw-motion').addEventListener('change', e => {
+  S.noMotion = e.target.checked;
+  applyMotion(S.noMotion);
+  saveSettings(S);
+});
+document.getElementById('sel-cache-ttl').addEventListener('change', e => {
+  S.cacheTtl = parseInt(e.target.value);
+  saveSettings(S);
+});
+document.getElementById('sel-concurrency').addEventListener('change', e => {
+  S.concurrency = parseInt(e.target.value);
+  saveSettings(S);
+});
+document.getElementById('settings-reset').addEventListener('click', () => {
+  S = resetSettings();
+  applyTheme(S.theme);
+  applyCompact(S.compact);
+  applyMotion(S.noMotion);
+  Object.keys(_scCache).forEach(k => delete _scCache[k]);
+  if (filtered.length) renderCards();
+  syncSettingsUI();
+  showToast('Settings reset to defaults', '🔄');
+});
+
+/* ── APPLY SAVED SETTINGS ON LOAD ── */
+applyCompact(S.compact);
+applyMotion(S.noMotion);
+
+/* ── NO-MOTION CSS ── */
+const motionStyle = document.createElement('style');
+motionStyle.textContent = `body.no-motion *{animation:none!important;transition:none!important}`;
+document.head.appendChild(motionStyle);
+
+/* ── FILTER DROPDOWN (>3 items → dropdown) ── */
+const CHIP_THRESHOLD = 3;
+function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
+  const wrap = document.getElementById(id);
+  const render = () => {
+    if (vals.length > CHIP_THRESHOLD) {
+      const active = getV();
+      const label = active ? lbl(active) : 'All';
+      wrap.innerHTML = '';
+      const dd = document.createElement('div');
+      dd.className = 'filter-dropdown';
+      const btn = document.createElement('button');
+      btn.className = 'filter-dropdown-btn' + (active ? ' has-active' : '');
+      btn.innerHTML = `${label} <svg width="10" height="6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 10 6"><path d="M1 1l4 4 4-4"/></svg>`;
+      const menu = document.createElement('div');
+      menu.className = 'filter-dropdown-menu';
+      menu.style.display = 'none';
+      ['', ...vals].forEach(v => {
+        const chip = document.createElement('button');
+        chip.className = 'chip' + (v === active ? ' active' : '');
+        chip.textContent = v === '' ? 'All' : lbl(v);
+        chip.onclick = () => { setV(v); menu.style.display = 'none'; btn.classList.remove('open'); render(); applyFilters(); };
+        menu.appendChild(chip);
+      });
+      btn.onclick = e => {
+        e.stopPropagation();
+        const isOpen = menu.style.display !== 'none';
+        document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
+        menu.style.display = isOpen ? 'none' : 'block';
+        btn.classList.toggle('open', !isOpen);
+      };
+      dd.appendChild(btn);
+      dd.appendChild(menu);
+      wrap.appendChild(dd);
+    } else {
+      wrap.innerHTML = ['', ...vals].map(v =>
+        `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
+      ).join('');
+      wrap.querySelectorAll('.chip').forEach(b => {
+        b.onclick = () => { setV(b.dataset.v); render(); applyFilters(); };
+      });
+    }
+  };
+  render();
+}
+
+/* ── CLOSE DROPDOWNS ON OUTSIDE CLICK ── */
+document.addEventListener('click', () => {
+  document.querySelectorAll('.filter-dropdown-menu').forEach(m => m.style.display = 'none');
+  document.querySelectorAll('.filter-dropdown-btn').forEach(b => b.classList.remove('open'));
+});
+
+/* ── CHECK SHARE LINK ON LOAD ── */
+checkShareLink();
+
+/* ── REMOVE OLD DIRECT SEARCH LISTENER (debounce handles it now) ── */
+// sortEl listener stays as-is
+
+
 /* ── HELPERS ── */
 function setSyncState(s, l) {
   const d = document.getElementById('sync-dot');
@@ -1377,5 +1909,6 @@ function showAlert(icon, msg) {
 function clearAlert() { document.getElementById('alert-area').innerHTML = ''; }
 function x(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 </script>
+
 </body>
 </html>
