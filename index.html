@@ -1184,7 +1184,6 @@ function showSplash(text) {
 // Init splash on load
 showSplash();
 
-
 /* ── FILTER DROPDOWN (>3 items → dropdown) ── */
 const CHIP_THRESHOLD = 3;
 function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
@@ -1252,7 +1251,6 @@ function buildChipsOrDropdown(id, vals, getV, setV, lbl = v => v) {
   render();
 }
 
-
 /* ── LOAD PAPERS ── */
 function loadPapers(papers, isSample) {
   all = papers; aStrand = ''; aGrade = ''; aYear = '';
@@ -1267,19 +1265,6 @@ function loadPapers(papers, isSample) {
   document.getElementById('year-filter-sep').style.display   = years.length ? '' : 'none';
   if (isSample && DRIVE_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE') setSyncState('sample', 'Sample data');
   applyFilters();
-}
-
-function buildChips(id, vals, getV, setV, lbl = v => v) {
-  const wrap = document.getElementById(id);
-  const render = () => {
-    wrap.innerHTML = ['', ...vals].map(v =>
-      `<button class="chip${v === getV() ? ' active' : ''}" data-v="${v}">${v === '' ? 'All' : lbl(v)}</button>`
-    ).join('');
-    wrap.querySelectorAll('.chip').forEach(b => {
-      b.onclick = () => { setV(b.dataset.v); render(); applyFilters(); };
-    });
-  };
-  render();
 }
 
 /* ── FILTER + SORT ── */
@@ -1432,11 +1417,6 @@ document.getElementById('refresh-btn').addEventListener('click', () => {
 });
 
 /* ── RE-RENDER ON THEME CHANGE (for strand colors) ── */
-toggleBtn.addEventListener('click', () => {
-  // Clear color cache so strand colors recalculate for new theme
-  Object.keys(_scCache).forEach(k => delete _scCache[k]);
-  if (filtered.length) renderCards();
-});
 
 /* ── EVENTS ── */
 /* search is handled by debounced listener above */
@@ -1551,8 +1531,6 @@ searchEl.addEventListener('input', () => {
   searchDebounce = setTimeout(applyFilters, 150);
 });
 
-/* ── SCROLL POSITION MEMORY removed — was causing page jump on mobile ── */
-
 /* ── BACK BUTTON CLOSES DRAWER ── */
 window.addEventListener('popstate', () => {
   if (document.getElementById('settings-ov').classList.contains('open')) {
@@ -1563,7 +1541,6 @@ window.addEventListener('popstate', () => {
     closeDrawer();
   }
 });
-
 
 /* ── KEYBOARD SHORTCUTS ── */
 document.addEventListener('keydown', e => {
