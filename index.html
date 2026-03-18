@@ -1160,7 +1160,7 @@ async function loadSplashText(rootFolderId) {
     if (!res.ok) return;
     const { files = [] } = await res.json();
     if (!files.length) return;
-    const r = await fetch(`https://www.googleapis.com/drive/v3/files/${files[0].id}?alt=media&key=${GOOGLE_API_KEY}`);
+    const r = await fetch(`https://drive.google.com/uc?export=download&id=${files[0].id}`);
     if (!r.ok) return;
     const text = await r.text();
     const lines = text.split('\n').map(l => l.trim()).filter(Boolean);
@@ -1770,7 +1770,7 @@ async function extractPapers(files, strandName, schoolYear, sectionName) {
   return poolMap(pdfs, async pdf => {
     const code = codeOf(pdf.name);
     if (!code || !txtMap[code]) return null;
-    const r = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files/${txtMap[code].id}?alt=media&key=${GOOGLE_API_KEY}`);
+    const r = await fetchWithTimeout(`https://drive.google.com/uc?export=download&id=${txtMap[code].id}`);
     if (!r.ok) throw new Error(`TXT fetch failed for ${code}: ${r.status}`);
     const parsed = parseTxt(await r.text());
     return {
@@ -1794,12 +1794,12 @@ async function fetchPapersFromDrive() {
   setProgress(15);
 
   // Step 2: list all strand folders in parallel
-  const strandContents = await Promise.all(
-    strandFolders.map(async sf => ({
-      name: sf.name.toUpperCase(), id: sf.id,
-      items: await driveList(sf.id),
-    }))
-  );
+  const strandContents = (await Promise.all(
+    strandFolders.map(async sf => {
+      try { return { name: sf.name.toUpperCase(), id: sf.id, items: await driveList(sf.id) }; }
+      catch(e) { console.warn('Strand folder failed:', sf.name, e.message); return null; }
+    })
+  )).filter(Boolean);
   setProgress(30);
   setSyncState('loading', `Found ${strandFolders.length} strand${strandFolders.length !== 1 ? 's' : ''}…`);
 
@@ -1810,9 +1810,12 @@ async function fetchPapersFromDrive() {
       yearFetchJobs.push({ strandName: strand.name, yearName: yf.name, id: yf.id });
     }
   }
-  const yearContents = await Promise.all(
-    yearFetchJobs.map(async job => ({ ...job, items: await driveList(job.id) }))
-  );
+  const yearContents = (await Promise.all(
+    yearFetchJobs.map(async job => {
+      try { return { ...job, items: await driveList(job.id) }; }
+      catch(e) { console.warn('Year folder failed:', job.yearName, e.message); return null; }
+    })
+  )).filter(Boolean);
   setProgress(50);
   setSyncState('loading', `Scanning ${yearFetchJobs.length} year folder${yearFetchJobs.length !== 1 ? 's' : ''}…`);
 
@@ -1835,13 +1838,14 @@ async function fetchPapersFromDrive() {
       });
     }
   }
-  // Fetch section folder contents
-  const sectionContents = await Promise.all(
+  // Fetch section folder contents — wrapped so one bad folder doesn't kill all
+  const sectionContents = (await Promise.all(
     sectionFetchJobs.map(async job => {
       if (job.items) return job; // already has items (loose files)
-      return { ...job, items: await driveList(job.id) };
+      try { return { ...job, items: await driveList(job.id) }; }
+      catch(e) { console.warn('Section folder failed:', job.sectionName, e.message); return null; }
     })
-  );
+  )).filter(Boolean);
   setProgress(75);
   setSyncState('loading', 'Loading paper metadata…');
 
@@ -1914,7 +1918,7 @@ function parseTxt(raw) {
     title:       o.title           || 'Untitled',
     authors:     o.authors         || o.author || '',
     date:        o.datepublished   || o.date   || '',
-    grade:       o.grade           || '',
+    grade:       (o.grade || '').replace(/^grade\s*/i, '').trim() || '',
     strand:      (o.strand         || '').toUpperCase(),
     section:     o.section         || '',
     restype:     o.researchtype    || o['research type']  || o.restype   || '',
