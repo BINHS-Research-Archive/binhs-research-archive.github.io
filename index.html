@@ -1742,23 +1742,25 @@ async function fetchPapersFromSheet() {
 }
 
 function parseCSV(csv) {
-  const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  if (lines.length < 2) return [];
-  // Parse header row
-  const headers = parseCSVRow(lines[0]).map(h => h.trim().toLowerCase());
+  // Parse the entire CSV character-by-character so multi-line quoted
+  // fields (abstracts with line breaks) are handled correctly.
+  const rows = parseCSVAll(csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
+  if (rows.length < 2) return [];
+
+  const headers = rows[0].map(h => h.trim().toLowerCase());
   const col = h => headers.indexOf(h);
   const papers = [];
-  for (let i = 1; i < lines.length; i++) {
-    const line = lines[i].trim();
-    if (!line) continue;
-    const vals = parseCSVRow(line);
-    const get = h => (vals[col(h)] || '').trim();
+
+  for (let i = 1; i < rows.length; i++) {
+    const vals = rows[i];
+    if (!vals.length || vals.every(v => !v.trim())) continue;
+    const get = h => { const c = col(h); return c >= 0 ? (vals[c] || '').trim() : ''; };
     const pdfId = get('pdfid');
-    if (!pdfId) continue; // skip rows without a PDF
+    if (!pdfId) continue;
     papers.push({
       code:       get('code'),
       pdfId,
-      title:      get('title')      || 'Untitled',
+      title:      get('title') || 'Untitled',
       authors:    get('authors'),
       date:       get('date'),
       grade:      get('grade').replace(/^grade\s*/i, '').trim(),
@@ -1777,24 +1779,28 @@ function parseCSV(csv) {
   return papers;
 }
 
-function parseCSVRow(row) {
-  // Handles quoted fields including fields with commas and newlines
-  const result = [];
-  let cur = '', inQuote = false;
-  for (let i = 0; i < row.length; i++) {
-    const ch = row[i];
-    if (inQuote) {
-      if (ch === '"' && row[i+1] === '"') { cur += '"'; i++; }
-      else if (ch === '"') inQuote = false;
-      else cur += ch;
+function parseCSVAll(csv) {
+  // Full RFC-4180 parser — reads char by char, respects quoted fields
+  // with embedded commas, newlines, and escaped double-quotes.
+  const rows = [];
+  let row = [], cur = '', inQ = false, i = 0;
+  while (i < csv.length) {
+    const ch = csv[i];
+    if (inQ) {
+      if (ch === '"' && csv[i+1] === '"') { cur += '"'; i += 2; continue; } // escaped quote
+      if (ch === '"') { inQ = false; i++; continue; }                        // closing quote
+      cur += ch; i++;                                                         // content inside quotes
     } else {
-      if (ch === '"') inQuote = true;
-      else if (ch === ',') { result.push(cur); cur = ''; }
-      else cur += ch;
+      if (ch === '"') { inQ = true; i++; continue; }                         // opening quote
+      if (ch === ',') { row.push(cur); cur = ''; i++; continue; }            // field separator
+      if (ch === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; i++; continue; } // row end
+      cur += ch; i++;
     }
   }
-  result.push(cur);
-  return result;
+  // push final field and row
+  row.push(cur);
+  if (row.some(v => v)) rows.push(row);
+  return rows;
 }
 
 async function loadFromSheet() {
