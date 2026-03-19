@@ -983,6 +983,8 @@ select.sort-sel option{background:var(--surface);color:var(--text)}
 /* ══════════════════════════════════════════
    ⚙️  CONFIGURATION — edit these two values
    ══════════════════════════════════════════ */
+const SHEET_ID = '1PZ6fmmfKXoXjXf4voGrbXq6DSI7L7FcLejdEVvTkVvU';
+// Drive folder + API key still used for logo and splash text only
 const DRIVE_FOLDER_ID = '1I83cCCtw7TrjPoHt0Vzj_oiiMYhUqFEz';
 const GOOGLE_API_KEY  = 'AIzaSyBtDIpY9BtR9yeciW2s3d-ss8dsv-Qe-lc';
 /* ══════════════════════════════════════════ */
@@ -1413,7 +1415,7 @@ function closeDrawer() { document.getElementById('drawer-ov').classList.remove('
 /* ── FORCE REFRESH BUTTON ── */
 document.getElementById('refresh-btn').addEventListener('click', () => {
   clearCache();
-  loadFromDrive();
+  loadFromSheet();
 });
 
 /* ── RE-RENDER ON THEME CHANGE (for strand colors) ── */
@@ -1649,18 +1651,18 @@ document.head.appendChild(motionStyle);
 
 /* ── CACHE CONFIG ── */
 const CACHE_KEY    = 'bytelib-papers-cache';
-const CACHE_VER    = 'v3'; // bump this to invalidate all caches on format change
+const CACHE_VER    = 'v4'; // bumped: switched to Google Sheets // bump this to invalidate all caches on format change
 function getCacheTTL() { return S.cacheTtl; }
 
 /* ── INIT ── */
 (function init() {
-  const ok = DRIVE_FOLDER_ID !== 'YOUR_FOLDER_ID_HERE' && GOOGLE_API_KEY !== 'YOUR_API_KEY_HERE';
+  const ok = SHEET_ID !== 'YOUR_SHEET_ID_HERE';
   if (!ok) {
     setSyncState('error', 'Not configured');
     gridEl.innerHTML = `<div class="state-box">
       <div class="icon">⚙️</div>
       <h3>Library not configured</h3>
-      <p>Open the HTML file and replace <strong>YOUR_FOLDER_ID_HERE</strong> and <strong>YOUR_API_KEY_HERE</strong> near the top of the &lt;script&gt; tag, then re-upload to GitHub.</p>
+      <p>Open the HTML file and replace <strong>YOUR_SHEET_ID_HERE</strong> near the top of the &lt;script&gt; tag, then re-upload to GitHub.</p>
     </div>`;
     return;
   }
@@ -1677,7 +1679,7 @@ function getCacheTTL() { return S.cacheTtl; }
     loadPapers(cached, false);
     const meta = JSON.parse(localStorage.getItem(CACHE_KEY + '-meta') || '{}');
     const age  = Date.now() - (meta.ts || 0);
-    if (meta.ver !== CACHE_VER) { clearCache(); loadFromDrive(); return; }
+    if (meta.ver !== CACHE_VER) { clearCache(); loadFromSheet(); return; }
     const cacheTime = meta.ts
       ? new Date(meta.ts).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })
       : '';
@@ -1685,7 +1687,7 @@ function getCacheTTL() { return S.cacheTtl; }
     // Only background-refresh if cache is stale
     if (age > getCacheTTL()) refreshInBackground();
   } else {
-    loadFromDrive();
+    loadFromSheet();
   }
 })();
 
@@ -1711,7 +1713,7 @@ function clearCache() {
 
 async function refreshInBackground() {
   try {
-    const papers = await fetchPapersFromDrive();
+    const papers = await fetchPapersFromSheet();
     if (papers && papers.length) {
       saveCache(papers);
       const now = new Date().toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' });
@@ -1720,163 +1722,90 @@ async function refreshInBackground() {
     }
   } catch(e) {
     console.warn('Background refresh failed:', e.message);
-    // Don't change sync state — keep showing cached data silently
   }
 }
 
 /* ── FETCH WITH TIMEOUT — prevents infinite "Syncing" hang ── */
-function fetchWithTimeout(url, ms = 15000) {
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), ms);
-  return fetch(url, { signal: controller.signal })
-    .finally(() => clearTimeout(timer));
-}
-
-/* ── DRIVE SCAN — parallel: Strand > School Year > files ── */
-const FOLDER_MIME = 'application/vnd.google-apps.folder';
-const codeOf = n => { const m = n.match(/-(\d{4})\.(pdf|txt)$/i); return m ? m[1] : null; };
-
-async function driveList(folderId) {
-  const q = encodeURIComponent(`'${folderId}' in parents and trashed=false`);
-  const res = await fetchWithTimeout(`https://www.googleapis.com/drive/v3/files?q=${q}&fields=files(id,name,mimeType)&pageSize=1000&key=${GOOGLE_API_KEY}`);
-  if (!res.ok) { const e = await res.json(); throw new Error((e.error && e.error.message) || res.status); }
-  const { files = [] } = await res.json();
-  return files;
-}
-
-// Concurrency-limited pool runner
-async function poolMap(items, fn, limit) {
-  const results = [];
-  let idx = 0;
-  async function worker() {
-    while (idx < items.length) {
-      const i = idx++;
-      try { results[i] = await fn(items[i], i); }
-      catch(e) { results[i] = null; }
-    }
-  }
-  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker));
-  return results.filter(Boolean);
-}
-
-// Extract papers from a pre-fetched file list using concurrency pool
-async function extractPapers(files, strandName, schoolYear, sectionName) {
-  const txtMap = {};
-  files.filter(f => f.name.toLowerCase().endsWith('.txt'))
-       .forEach(f => { const c = codeOf(f.name); if (c) txtMap[c] = f; });
-
-  const pdfs = files.filter(f => f.name.toLowerCase().endsWith('.pdf'));
-
-  return poolMap(pdfs, async pdf => {
-    const code = codeOf(pdf.name);
-    if (!code || !txtMap[code]) return null;
-    const r = await fetchWithTimeout(`https://drive.google.com/uc?export=download&id=${txtMap[code].id}`);
-    if (!r.ok) throw new Error(`TXT fetch failed for ${code}: ${r.status}`);
-    const parsed = parseTxt(await r.text());
-    return {
-      code, ...parsed,
-      strand:     strandName  || parsed.strand,
-      schoolyear: schoolYear  || parsed.schoolyear,
-      // Section from folder name takes priority over TXT field
-      section:    sectionName || parsed.section,
-      pdfId: pdf.id,
-    };
-  }, S.concurrency);
-}
-
-async function fetchPapersFromDrive() {
-  setProgress(5);
-  setSyncState('loading', 'Scanning folders…');
-
-  // Step 1: root folder
-  const rootItems = await driveList(DRIVE_FOLDER_ID);
-  const strandFolders = rootItems.filter(f => f.mimeType === FOLDER_MIME);
-  setProgress(15);
-
-  // Step 2: list all strand folders in parallel
-  const strandContents = (await Promise.all(
-    strandFolders.map(async sf => {
-      try { return { name: sf.name.toUpperCase(), id: sf.id, items: await driveList(sf.id) }; }
-      catch(e) { console.warn('Strand folder failed:', sf.name, e.message); return null; }
-    })
-  )).filter(Boolean);
-  setProgress(30);
-  setSyncState('loading', `Found ${strandFolders.length} strand${strandFolders.length !== 1 ? 's' : ''}…`);
-
-  // Step 3: list all year folders in parallel
-  const yearFetchJobs = [];
-  for (const strand of strandContents) {
-    for (const yf of strand.items.filter(f => f.mimeType === FOLDER_MIME)) {
-      yearFetchJobs.push({ strandName: strand.name, yearName: yf.name, id: yf.id });
-    }
-  }
-  const yearContents = (await Promise.all(
-    yearFetchJobs.map(async job => {
-      try { return { ...job, items: await driveList(job.id) }; }
-      catch(e) { console.warn('Year folder failed:', job.yearName, e.message); return null; }
-    })
-  )).filter(Boolean);
-  setProgress(50);
-  setSyncState('loading', `Scanning ${yearFetchJobs.length} year folder${yearFetchJobs.length !== 1 ? 's' : ''}…`);
-
-  // Step 4: list all section folders inside each year folder in parallel
-  const sectionFetchJobs = [];
-  for (const yc of yearContents) {
-    const sectionFolders = yc.items.filter(f => f.mimeType === FOLDER_MIME);
-    const looseFiles = yc.items.filter(f => f.mimeType !== FOLDER_MIME);
-    // Files directly in year folder (no section) — still supported
-    if (looseFiles.length) {
-      sectionFetchJobs.push({
-        strandName: yc.strandName, yearName: yc.yearName,
-        sectionName: '', items: looseFiles,
-      });
-    }
-    for (const sf of sectionFolders) {
-      sectionFetchJobs.push({
-        strandName: yc.strandName, yearName: yc.yearName,
-        sectionName: sf.name, id: sf.id,
-      });
-    }
-  }
-  // Fetch section folder contents — wrapped so one bad folder doesn't kill all
-  const sectionContents = (await Promise.all(
-    sectionFetchJobs.map(async job => {
-      if (job.items) return job; // already has items (loose files)
-      try { return { ...job, items: await driveList(job.id) }; }
-      catch(e) { console.warn('Section folder failed:', job.sectionName, e.message); return null; }
-    })
-  )).filter(Boolean);
-  setProgress(75);
-  setSyncState('loading', 'Loading paper metadata…');
-
-  // Step 5: extract papers from all folders
-  const allExtractions = [];
-  // Root-level loose files
-  allExtractions.push(extractPapers(rootItems.filter(f => f.mimeType !== FOLDER_MIME), '', '', ''));
-  // Strand-level loose files
-  for (const strand of strandContents) {
-    const loose = strand.items.filter(f => f.mimeType !== FOLDER_MIME);
-    if (loose.length) allExtractions.push(extractPapers(loose, strand.name, '', ''));
-  }
-  // Section-level files (the main path)
-  for (const sc of sectionContents) {
-    allExtractions.push(extractPapers(sc.items, sc.strandName, sc.yearName, sc.sectionName));
-  }
-
-  const paperGroups = await Promise.all(allExtractions);
+/* ── GOOGLE SHEETS — single CSV fetch replaces all Drive TXT scanning ── */
+async function fetchPapersFromSheet() {
+  setProgress(10);
+  setSyncState('loading', 'Loading from sheet…');
+  const url = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/export?format=csv&t=${Date.now()}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Sheet fetch failed: ${res.status}`);
+  const csv = await res.text();
+  setProgress(70);
+  setSyncState('loading', 'Parsing papers…');
+  const papers = parseCSV(csv);
   setProgress(95);
-  return paperGroups.flat();
+  return papers;
 }
 
-async function loadFromDrive() {
-  setSyncState('loading', 'Scanning…');
-  gridEl.innerHTML = '<div class="state-box"><div class="spinner"></div><p>Loading papers from Drive…</p></div>';
+function parseCSV(csv) {
+  const lines = csv.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
+  if (lines.length < 2) return [];
+  // Parse header row
+  const headers = parseCSVRow(lines[0]).map(h => h.trim().toLowerCase());
+  const col = h => headers.indexOf(h);
+  const papers = [];
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i].trim();
+    if (!line) continue;
+    const vals = parseCSVRow(line);
+    const get = h => (vals[col(h)] || '').trim();
+    const pdfId = get('pdfid');
+    if (!pdfId) continue; // skip rows without a PDF
+    papers.push({
+      code:       get('code'),
+      pdfId,
+      title:      get('title')      || 'Untitled',
+      authors:    get('authors'),
+      date:       get('date'),
+      grade:      get('grade').replace(/^grade\s*/i, '').trim(),
+      strand:     get('strand').toUpperCase(),
+      section:    get('section'),
+      schoolyear: get('schoolyear'),
+      restype:    get('restype'),
+      design:     get('design'),
+      subject:    get('subject'),
+      adviser:    get('adviser'),
+      keywords:   get('keywords'),
+      award:      get('award'),
+      abstract:   get('abstract'),
+    });
+  }
+  return papers;
+}
+
+function parseCSVRow(row) {
+  // Handles quoted fields including fields with commas and newlines
+  const result = [];
+  let cur = '', inQuote = false;
+  for (let i = 0; i < row.length; i++) {
+    const ch = row[i];
+    if (inQuote) {
+      if (ch === '"' && row[i+1] === '"') { cur += '"'; i++; }
+      else if (ch === '"') inQuote = false;
+      else cur += ch;
+    } else {
+      if (ch === '"') inQuote = true;
+      else if (ch === ',') { result.push(cur); cur = ''; }
+      else cur += ch;
+    }
+  }
+  result.push(cur);
+  return result;
+}
+
+async function loadFromSheet() {
+  setSyncState('loading', 'Loading…');
+  gridEl.innerHTML = '<div class="state-box"><div class="spinner"></div><p>Loading papers…</p></div>';
   clearAlert();
   try {
-    const papers = await fetchPapersFromDrive();
+    const papers = await fetchPapersFromSheet();
     if (!papers.length) {
       setSyncState('error', 'No papers found');
-      gridEl.innerHTML = '<div class="state-box"><div class="icon">📂</div><h3>No papers found</h3><p>Make sure the folder contains PDF + TXT pairs with matching <strong>-XXXX</strong> codes and that the folder is set to "Anyone with the link can view."</p></div>';
+      gridEl.innerHTML = '<div class="state-box"><div class="icon">📂</div><h3>No papers found</h3><p>Make sure the Google Sheet has data and is shared as "Anyone with the link can view."</p></div>';
       return;
     }
     saveCache(papers);
@@ -1885,51 +1814,21 @@ async function loadFromDrive() {
     setSyncState('live', `${papers.length} papers · synced ${now}`);
     loadPapers(papers, false);
   } catch(err) {
-    console.error('Drive load failed:', err);
+    console.error('Sheet load failed:', err);
     const stale = loadCache();
     if (stale && stale.length) {
       setSyncState('sample', 'Cached — sync failed');
-      showAlert('⚠️', `Could not refresh from Drive: ${err.message}. Showing last cached data.`);
+      showAlert('⚠️', `Could not refresh: ${err.message}. Showing cached data.`);
       loadPapers(stale, false);
     } else {
       setSyncState('error', 'Failed to load');
       const hint = err.name === 'AbortError'
-        ? 'Request timed out. Check your internet connection and try refreshing.'
-        : `${err.message}. Check the Folder ID, API Key, and folder sharing settings.`;
+        ? 'Request timed out. Check your internet connection.'
+        : `${err.message}. Check the Sheet ID and sharing settings.`;
       showAlert('⚠️', hint);
       gridEl.innerHTML = `<div class="state-box"><div class="icon">⚠️</div><h3>Could not load library</h3><p>${hint}</p></div>`;
     }
   }
-}
-
-/* ── PARSE TXT ── */
-function parseTxt(raw) {
-  const lines = raw.replace(/\r\n/g, '\n').replace(/\r/g, '\n').split('\n');
-  const o = {}; let abs = [], inAbs = false;
-  for (const ln of lines) {
-    if (inAbs) { abs.push(ln.trimEnd()); continue; }
-    const i = ln.indexOf(':'); if (i < 0) continue;
-    const k = ln.slice(0, i).trim().toLowerCase().replace(/\s+/g, '');
-    const v = ln.slice(i + 1).trim();
-    if (k === 'abstract') { inAbs = true; if (v) abs.push(v); } else o[k] = v;
-  }
-  const abstract = abs.join('\n').trim();
-  return {
-    title:       o.title           || 'Untitled',
-    authors:     o.authors         || o.author || '',
-    date:        o.datepublished   || o.date   || '',
-    grade:       (o.grade || '').replace(/^grade\s*/i, '').trim() || '',
-    strand:      (o.strand         || '').toUpperCase(),
-    section:     o.section         || '',
-    restype:     o.researchtype    || o['research type']  || o.restype   || '',
-    design:      o.formatanddesign || o['format and design'] || o.design || '',
-    subject:     o.subjectarea     || o['subject area']   || o.subject   || '',
-    schoolyear:  o.schoolyear      || o['school year']    || o.sy        || '',
-    adviser:     o.adviser         || o.advisor            || '',
-    award:       o.award           || o['award/recognition'] || o.recognition || '',
-    keywords:    o.keywords        || o.keyword            || '',
-    abstract,
-  };
 }
 
 /* ── CLOSE DROPDOWNS ON OUTSIDE CLICK / SCROLL / RESIZE ── */
